@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt History</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Receipt History</h1>
+        <div id="receiptsList"></div>
+    </div>
+
+    <script>
+        async function loadReceipts() {
+            try {
+                const response = await fetch('/receipts');
+                const data = await response.json();
+                
+                const receiptsDiv = document.getElementById('receiptsList');
+                if (data.success) {
+                    receiptsDiv.innerHTML = data.receipts.map(receipt => `
+                        <div class="receipt-card">
+                            <h3>${receipt.store_name}</h3>
+                            <p>Date: ${new Date(receipt.receipt_date).toLocaleDateString()}</p>
+                            <p>Total: $${receipt.total}</p>
+                            <button onclick="viewReceipt('${receipt.receipt_id}')">
+                                View Details
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading receipts:', error);
+            }
+        }
+
+        async function viewReceipt(id) {
+            try {
+                const response = await fetch(`/receipts/${id}`);
+                const data = await response.json();
+                if (data.success) {
+                    // Display receipt details
+                    // You can add your own display logic here
+                }
+            } catch (error) {
+                console.error('Error loading receipt details:', error);
+            }
+        }
+
+        // Load receipts when page loads
+        document.addEventListener('DOMContentLoaded', loadReceipts);
+    </script>
+</body>
+</html>

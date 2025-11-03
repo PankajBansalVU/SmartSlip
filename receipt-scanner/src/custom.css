@@ -1,0 +1,66 @@
+/* Basic layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+  
+  /* Navbar */
+  .navbar {
+    padding: 15px 0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 30px;
+  }
+  
+  .navbar-brand {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* Receipt upload area */
+  .upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 25px;
+    text-align: center;
+    background-color: #f8f9fa;
+    margin: 20px 0;
+    cursor: pointer;
+  }
+  
+  .upload-area:hover {
+    background-color: #e9ecef;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    background-color: #4285f4;
+    border-color: #4285f4;
+  }
+  
+  .btn-primary:hover {
+    background-color: #3367d6;
+    border-color: #3367d6;
+  }
+  
+  .btn-outline-primary {
+    color: #4285f4;
+    border-color: #4285f4;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #4285f4;
+    border-color: #4285f4;
+  }
+  
+  /* File upload */
+  .file-input {
+    display: none;
+  }
+  
+  /* Icons */
+  .icon {
+    margin-right: 6px;
+  }

@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Spending Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .small-chart {
+            height: 200px;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .filters {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .summary-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .category-color {
+            width: 15px;
+            height: 15px;
+            display: inline-block;
+            margin-right: 6px;
+            border-radius: 2px;
+        }
+        
+        .trend-indicator {
+            margin-left: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .trend-up {
+            color: #dc3545;
+        }
+        
+        .trend-down {
+            color: #28a745;
+        }
+        
+        .trend-neutral {
+            color: #6c757d;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .spending-heatmap {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 1px;
+            margin-top: 20px;
+        }
+        
+        .heatmap-cell {
+            width: 100%;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+        
+        .heatmap-legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            width: 20px;
+            height: 20px;
+            margin: 0 5px;
+        }
+        
+        .axis-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .day-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            padding-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+        }
+        
+        .hour-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+            text-align: center;
+            padding-bottom: 5px;
+        }
+        
+        .comparison-bar {
+            height: 24px;
+            margin: 5px 0;
+            position: relative;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .comparison-fill {
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .current-fill {
+            background-color: #007bff;
+        }
+        
+        .previous-fill {
+            background-color: #6c757d;
+            opacity: 0.5;
+        }
+        
+        .expandable-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .expanded {
+            max-height: 1000px;
+        }
+        
+        .comparison-legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .legend-marker {
+            width: 15px;
+            height: 15px;
+            display: inline-block;
+            margin-right: 5px;
+            border-radius: 2px;
+        }
+        
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .budget-progress {
+            height: 24px;
+            margin: 5px 0;
+            position: relative;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .budget-fill {
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #28a745;
+        }
+        
+        .budget-over {
+            background-color: #dc3545;
+        }
+        
+        .budget-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .dropdown-menu {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .top-categories-progress {
+            height: 20px;
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 250px;
+            }
+            
+            .spending-heatmap {
+                grid-template-columns: repeat(12, 1fr);
+                grid-template-rows: repeat(14, 1fr);
+            }
+            
+            .heatmap-cell {
+                aspect-ratio: 1;
+            }
+            
+            .hour-label {
+                transform: rotate(90deg);
+                height: 20px;
+                font-size: 0.6rem;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Spending Analysis Dashboard</h1>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download"></i> Export Report
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><h6 class="dropdown-header">Export Format</h6></li>
+                    <li><a class="dropdown-item" href="#" id="exportPDF"><i class="bi bi-file-earmark-pdf text-danger"></i> PDF Report</a></li>
+                    <li><a class="dropdown-item" href="#" id="exportCSV"><i class="bi bi-filetype-csv text-success"></i> CSV Export</a></li>
+                    <li><a class="dropdown-item" href="#" id="exportExcel"><i class="bi bi-file-earmark-excel text-success"></i> Excel Workbook</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" id="exportJSON"><i class="bi bi-filetype-json text-warning"></i> JSON Data</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Loading spinner -->
+        <div id="loadingSpinner" class="spinner-overlay">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Export Status Toast -->
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div id="exportToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong class="me-auto">Export Successful</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="exportToastBody">
+                    Your report has been generated successfully!
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Budget Modal -->
+    <div class="modal fade" id="budgetModal" tabindex="-1" aria-labelledby="budgetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="budgetModalLabel">Edit Category Budgets</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p class="small text-muted">Set monthly budget limits for each category.</p>
+                    </div>
+                    <div id="budgetFormItems">
+                        <!-- Budget form items will be added here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveBudgets">Save Budgets</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        </div>
+
+         <!-- Key Metrics -->
+         <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-label">Total Spending</div>
+                    <div class="stat-value" id="totalSpendingValue">$0.00</div>
+                    <div class="trend-indicator" id="totalSpendingTrend"></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-label">Monthly Average</div>
+                    <div class="stat-value" id="monthlyAverageValue">$0.00</div>
+                    <div class="trend-indicator" id="monthlyAvgTrend"></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-label">Transactions</div>
+                    <div class="stat-value" id="transactionCountValue">0</div>
+                    <div class="trend-indicator" id="transactionCountTrend"></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <div class="stat-label">Top Category</div>
+                    <div class="stat-value" id="topCategoryValue">-</div>
+                    <div class="trend-indicator" id="topCategoryPercent"></div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- Sidebar Section -->
+            <div class="col-lg-4 order-lg-2 order-1">
+                <!-- Summary Statistics -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Summary</span>
+                        <button class="btn btn-sm btn-outline-secondary" id="refreshSummary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="summary-item">
+                            <strong>Total Spending:</strong>
+                            <span id="totalSpending">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Top Category:</strong>
+                            <span id="topCategory">None</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Categories:</strong>
+                            <span id="categoryCount">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Average Transaction:</strong>
+                            <span id="avgTransaction">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Date Range:</strong>
+                            <span id="dateRange">All Time</span>
+                        </div>
+                    </div>
+                </div>
+        <!-- Date Range Filter -->
+        <div class="filters">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="categoryFilter" class="form-label">Category Filter</label>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle form-control" type="button" id="categoryFilterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                            All Categories
+                        </button>
+                        <ul class="dropdown-menu w-100" id="categoryFilterMenu" aria-labelledby="categoryFilterBtn">
+                            <li><a class="dropdown-item active" href="#" data-value="all">All Categories</a></li>
+                            <!-- Categories will be added dynamically -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" id="applyFilter">
+                        <i class="bi bi-funnel"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+
+                <!-- Quick Date Range Presets -->
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label small text-muted">Quick Date Ranges:</label>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="preset7Days">
+                            <i class="bi bi-calendar-week"></i> Last 7 Days
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="preset30Days">
+                            <i class="bi bi-calendar-month"></i> Last 30 Days
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="preset90Days">
+                            <i class="bi bi-calendar3"></i> Last 90 Days
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="presetThisMonth">
+                            <i class="bi bi-calendar-check"></i> This Month
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="presetLastMonth">
+                            <i class="bi bi-calendar-x"></i> Last Month
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            
+                
+                <!-- Top 5 Categories -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Top Categories</span>
+                        <span class="badge bg-primary" id="topCategoriesTotal">$0</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="topCategoriesList">
+                            <!-- Categories will be populated here -->
+                            <li class="list-group-item text-center text-muted">No data available</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Budget Tracker -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Budget Tracker</span>
+                        <button class="btn btn-sm btn-outline-secondary" id="editBudgets">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle"></i> Set budgets for each category to track your spending.
+                        </div>
+                        <div id="budgetTrackers">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                
+                <!-- Top Spending Items -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Top Spending Items</span>
+                        <button class="btn btn-sm btn-outline-secondary" id="toggleItemsList">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topItemsTable">
+                                    <!-- Items will be populated here -->
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No data available</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Savings Opportunity -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Savings Opportunities</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="savingsOpportunities">
+                            <!-- Will be populated dynamically -->
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-lightbulb"></i> Analyzing your spending patterns...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+       
+        <div class="row g-3">
+            <!-- Main Charts Section -->
+            <div class="col-lg-8 order-lg-1 order-2">
+                <!-- Spending Overview -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Spending by Category</span>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" id="categoryChartTypeBar">
+                                <i class="bi bi-bar-chart"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="categoryChartTypePie">
+                                <i class="bi bi-pie-chart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Monthly Trend -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Monthly Spending Trend</span>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" id="monthlyChartTypeLine">
+                                <i class="bi bi-graph-up"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="monthlyChartTypeBar">
+                                <i class="bi bi-bar-chart"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="monthlyChartTypeStacked">
+                                <i class="bi bi-stack"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weekly Pattern -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Weekly Spending Pattern</span>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary active" id="toggleWeeklyPatternChart">
+                                <i class="bi bi-graph-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="weeklyPatternChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Time & Day Heatmap -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Spending Heatmap (When Do You Shop?)</span>
+                        <button class="btn btn-sm btn-outline-secondary" id="toggleHeatmapView">
+                            <i class="bi bi-grid"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-center" id="heatmapGrid">
+                            <div class="col-auto">
+                                <div class="d-flex flex-column justify-content-around" style="height: 350px;">
+                                    <div class="day-label">Monday</div>
+                                    <div class="day-label">Tuesday</div>
+                                    <div class="day-label">Wednesday</div>
+                                    <div class="day-label">Thursday</div>
+                                    <div class="day-label">Friday</div>
+                                    <div class="day-label">Saturday</div>
+                                    <div class="day-label">Sunday</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="row g-0">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between px-2 mb-2">
+                                            <div class="hour-label">12am</div>
+                                            <div class="hour-label">6am</div>
+                                            <div class="hour-label">12pm</div>
+                                            <div class="hour-label">6pm</div>
+                                            <div class="hour-label">11pm</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="spendingHeatmap" class="spending-heatmap"></div>
+                                <div class="heatmap-legend mt-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-1">Low</span>
+                                        <div class="legend-item" style="background-color: rgba(0, 100, 255, 0.1);"></div>
+                                        <div class="legend-item" style="background-color: rgba(0, 100, 255, 0.3);"></div>
+                                        <div class="legend-item" style="background-color: rgba(0, 100, 255, 0.5);"></div>
+                                        <div class="legend-item" style="background-color: rgba(0, 100, 255, 0.7);"></div>
+                                        <div class="legend-item" style="background-color: rgba(0, 100, 255, 0.9);"></div>
+                                        <span class="ms-1">High</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="heatmapChartView" class="chart-container" style="display: none;">
+                            <canvas id="heatmapChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Store Comparison -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Spending by Store</span>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary active" id="toggleStoreChart">
+                                <i class="bi bi-graph-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="storeComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Category Comparison Month over Month -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Month over Month Category Comparison</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" id="monthSelector" data-bs-toggle="dropdown" aria-expanded="false">
+                                Current Month
+                            </button>
+                            <ul class="dropdown-menu" id="monthSelectorMenu">
+                                <!-- Months will be populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="comparison-legend">
+                            <div><span class="legend-marker current-fill"></span> Current Month</div>
+                            <div><span class="legend-marker previous-fill"></span> Previous Month</div>
+                        </div>
+                        <div id="categoryComparison">
+                            <!-- Will be populated dynamically -->
+                            <div class="text-center text-muted py-5">Select a month to see comparison</div>
+                        </div>
+                    </div>
+                </div>
+    
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="js/spending-analysis.js"></script>
+                <script src="js/spending-analysis-report.js"></script>
+            
+</body>
+</html>

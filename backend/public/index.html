@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="view-port" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+    </head>
+    <title>Receipt Scanner & Analyzer</title>
+    <style>
+
+.nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        margin-bottom: 15px;
+    }
+    
+    .main-nav {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .main-nav a {
+        color: #6b7280;
+        text-decoration: none;
+        font-weight: 500;
+        position: relative;
+        padding: 5px 0;
+        transition: color 0.2s;
+    }
+    
+    .main-nav a.active {
+        color: #2563eb;
+    }
+    
+    .main-nav a.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #2563eb;
+        border-radius: 2px;
+    }
+    
+    .main-nav a:hover {
+        color: #2563eb;
+    }
+    
+    .menu-dropdown {
+        position: relative;
+    }
+    
+    .menu-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .menu-button:hover {
+        background-color: #f3f4f6;
+    }
+    
+    .menu-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .menu-icon span {
+        width: 4px;
+        height: 4px;
+        background-color: #6b7280;
+        border-radius: 50%;
+    }
+    
+    .dropdown-content {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        min-width: 180px;
+        z-index: 1000;
+        display: none;
+        overflow: hidden;
+    }
+    
+    .dropdown-content.show {
+        display: block;
+    }
+    
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: #374151;
+        transition: background-color 0.2s;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f3f4f6;
+    }
+    
+    .dropdown-item i {
+        margin-right: 12px;
+        font-size: 18px;
+    }
+    
+    .dropdown-divider {
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 4px 0;
+    }
+    
+    .logout-item {
+        color: #ef4444;
+    }
+    
+    @media (max-width: 640px) {
+        .main-nav {
+            gap: 12px;
+        }
+    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #059669;
+            --danger-color: #dc2626;
+            --background-color: #f3f4f6;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6b7280;
+        }
+
+        .upload-section {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .upload-section.drag-over {
+            border-color: var(--primary-color);
+            background: #f8fafc;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .preview-section {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .preview-section img,
+        .preview-section video {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-card h2 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 1.25rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .result-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .result-value {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .items-table th {
+            background: #f8fafc;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: var(--danger-color);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: var(--success-color);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .camera-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    position: relative;
+}
+
+.camera-container video {
+    width: 100%;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+}
+
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .camera-container {
+        margin: 10px auto;
+    }
+}
+.enhancement-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.preview-section {
+    position: relative;
+    margin: 20px 0;
+}
+
+.preview-image {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.analysis-results {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.result-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.result-card h3 {
+    margin-bottom: 15px;
+    color: #2563eb;
+    font-size: 1.2rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.info-label {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    font-weight: 500;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.items-table th,
+.items-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.items-table th {
+    background: #f8fafc;
+    font-weight: 500;
+}
+.category-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    color: white;
+    background-color: #666;
+}
+
+.category-1 { background-color: #4CAF50; } /* Groceries */
+.category-2 { background-color: #2196F3; } /* Electronics */
+.category-3 { background-color: #F44336; } /* Clothing */
+.category-4 { background-color: #FF9800; } /* Food & Dining */
+.category-5 { background-color: #9C27B0; } /* Household */
+.category-6 { background-color: #E91E63; } /* Health & Beauty */
+.category-7 { background-color: #607D8B; } /* Office Supplies */
+.category-8 { background-color: #673AB7; } /* Entertainment */
+.category-9 { background-color: #795548; } /* Transportation */
+.category-10 { background-color: #009688; } /* Services */
+.category-11 { background-color: #9E9E9E; } /* Others */
+
+.category-id {
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+.category-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.category-total {
+    font-weight: bold;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Receipt Scanner & Analyzer</h1>
+            <p>Upload or capture receipts for instant analysis</p>
+            <div class="nav-bar">
+                <a href="/">Home</a>
+                <a href="/history.html">Receipt History</a>
+                <a href="/login.html" id="loginLink">Login</a>
+                <a href="/spending-analysis.html" class="nav-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Spending Analysis</span>
+                </a>
+                <a href="#" id="logoutLink" style="display:none;">Logout</a>
+            </div>
+        </div>
+
+        <div class="controls">
+            <!-- File Upload Button -->
+            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                📄 Upload Receipt
+            </button>
+            <input type="file" id="fileInput" accept="image/*,.pdf" style="display: none">
+        
+            <!-- Camera Button (Mobile) -->
+            <button id="cameraButton" class="btn btn-success" onclick="initCamera()">
+                📷 Take Photo
+            </button>
+        
+            <!-- Capture Button (Hidden initially) -->
+            <button id="captureButton" class="btn btn-danger" style="display: none;" onclick="capturePhoto()">
+                📸 Capture
+            </button>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <div class="upload-section" id="dropZone">
+            <p>Drag and drop your receipt here</p>
+            <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">
+                Supports PDF and images (JPG, PNG)
+            </p>
+        </div>
+        
+        <div id="cameraContainer" style="display: none;" class="camera-container">
+            <video id="cameraFeed" autoplay playsinline></video>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="status-text" id="statusText">Processing...</div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-card">
+                <h2>Receipt Details</h2>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <span class="result-label">Store</span>
+                        <span class="result-value" id="storeName">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Date</span>
+                        <span class="result-value" id="receiptDate">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Amount</span>
+                        <span class="result-value" id="totalAmount">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Payment Method</span>
+                        <span class="result-value" id="paymentMethod">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <h2>Items</h2>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody"></tbody>
+                </table>
+            </div>
+
+            <button class="btn btn-primary" onclick="startOver()">
+                Scan Another Receipt
+            </button>
+        </div>
+    </div>
+
+    <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('authToken');
+    const loginLink = document.getElementById('loginLink');
+    const logoutLink = document.getElementById('logoutLink');
+    
+    if (token) {
+        loginLink.style.display = 'none';
+        logoutLink.style.display = 'inline';
+        
+        // Add logout functionality
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            window.location.href = '/login.html';
+        });
+    } else {
+        loginLink.style.display = 'inline';
+        logoutLink.style.display = 'none';
+    }
+});
+        let stream = null;
+        const processingSteps = [
+            'Uploading receipt...',
+            'Processing image...',
+            'Extracting text...',
+            'Analyzing content...'
+        ];
+
+        // Event Listeners
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        
+        // Drag and Drop
+        const dropZone = document.getElementById('dropZone');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        dropZone.addEventListener('dragenter', () => dropZone.classList.add('drag-over'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', async (e) => {
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                await handleFileUpload({ target: { files: [file] } });
+            }
+        });
+
+        function showImagePreview(file, enhanced = false) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewImage = document.getElementById('previewImage');
+        previewImage.src = e.target.result;
+        previewImage.style.display = 'block';
+        
+        if (!enhanced) {
+            // Add enhancement indicator
+            const enhancementLabel = document.createElement('div');
+            enhancementLabel.className = 'enhancement-status';
+            enhancementLabel.textContent = 'Enhancing image...';
+            previewImage.parentElement.appendChild(enhancementLabel);
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+
+        // Camera Functions
+        async function initCamera() {
+    const cameraContainer = document.getElementById('cameraContainer');
+    const cameraFeed = document.getElementById('cameraFeed');
+    const cameraButton = document.getElementById('cameraButton');
+    const captureButton = document.getElementById('captureButton');
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                facingMode: { exact: 'environment' },
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            }
+        });
+
+        cameraFeed.srcObject = stream;
+        cameraContainer.style.display = 'block';
+        cameraButton.style.display = 'none';
+        captureButton.style.display = 'block';
+        document.getElementById('dropZone').style.display = 'none';
+
+    } catch (error) {
+        console.error('Camera error:', error);
+        // Try fallback to any available camera
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: true
+            });
+            cameraFeed.srcObject = stream;
+            cameraContainer.style.display = 'block';
+            cameraButton.style.display = 'none';
+            captureButton.style.display = 'block';
+            document.getElementById('dropZone').style.display = 'none';
+        } catch (fallbackError) {
+            showError('Unable to access camera. Please ensure you have granted camera permissions.');
+        }
+    }
+}
+
+async function capturePhoto() {
+    if (!stream) return;
+
+    const cameraFeed = document.getElementById('cameraFeed');
+    const canvas = document.createElement('canvas');
+    canvas.width = cameraFeed.videoWidth;
+    canvas.height = cameraFeed.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(cameraFeed, 0, 0);
+
+    try {
+        const blob = await new Promise(resolve => 
+            canvas.toBlob(resolve, 'image/jpeg', 0.95)
+        );
+        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+        
+        const formData = new FormData();
+        formData.append('file', file);
+
+        showProgress(true);
+        updateProgress(25, 'Uploading image...');
+
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error('Upload failed');
+        
+        const data = await response.json();
+        if (data.status === 'success' && data.text) {
+            updateProgress(75, 'Analyzing text...');
+            await analyzeReceipt(data.text);
+            stopCamera();
+        } else {
+            throw new Error('No text extracted from image');
+        }
+
+    } catch (error) {
+        console.error('Capture error:', error);
+        showError(error.message);
+    } finally {
+        showProgress(false);
+    }
+}
+
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    document.getElementById('cameraContainer').style.display = 'none';
+    document.getElementById('cameraButton').style.display = 'block';
+    document.getElementById('captureButton').style.display = 'none';
+    document.getElementById('dropZone').style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if the device has a camera
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        document.getElementById('cameraButton').style.display = 'none';
+    }
+});
+
+async function analyzeReceipt(text) {
+    try {
+        console.log('Starting receipt analysis with text:', text.substring(0, 100) + '...');
+        updateProgress(85, 'Analyzing receipt...');
+
+        const response = await fetch('http://localhost:3000/analyze-receipt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text })
+        });
+
+        console.log('Analysis response status:', response.status);
+        if (!response.ok) throw new Error(`Analysis failed: ${response.status}`);
+
+        const data = await response.json();
+        console.log('Analysis result:', data);
+        
+        if (data.success && data.data) {
+            displayResults(data.data);
+            updateProgress(100, 'Complete!');
+        } else {
+            throw new Error(data.message || 'Analysis failed to return results');
+        }
+
+    } catch (error) {
+        console.error('Analysis error:', error);
+        showError(error.message);
+    } finally {
+        showProgress(false);
+    }
+}
+        // File Upload Handler
+        async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        showProgress(true);
+        updateProgress(0, 'Processing image...');
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        updateProgress(25, 'Uploading file...');
+
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error('Upload failed');
+
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.text) {
+            updateProgress(75, 'Analyzing text...');
+            await analyzeReceipt(data.text);
+        } else {
+            throw new Error('No text extracted from image');
+        }
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        showError(error.message);
+    } finally {
+        showProgress(false);
+    }
+}
+
+
+
+        // UI Functions
+        function showProgress(show) {
+            document.getElementById('progressContainer').style.display = show ? 'block' : 'none';
+        }
+
+        function updateProgress(percent, status) {
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            document.getElementById('statusText').textContent = status;
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 5000);
+        }
+
+function createSection(title, data) {
+    const section = document.createElement('div');
+    section.className = 'result-card';
+    let content = `<h3>${title}</h3><div class="info-grid">`;
+    
+    for (const [key, value] of Object.entries(data)) {
+        if (key && value) { // Only add if both key and value exist
+            content += `
+                <div class="info-item">
+                    <span class="info-label">${key}:</span>
+                    <span class="info-value">${value}</span>
+                </div>
+            `;
+        }
+    }
+    
+    content += '</div>';
+    section.innerHTML = content;
+    return section;
+}
+function displayResults(analysis) {
+    try {
+        // Clear previous results first
+        document.getElementById('resultSection').innerHTML = '';
+        
+        // Create main container
+        const container = document.createElement('div');
+        container.className = 'analysis-results';
+
+        // Store Information Section
+        const storeSection = createSection('Store Information', {
+            'Name': analysis.store.name,
+            'Location': analysis.store.location,
+            'ABN': analysis.store.abn || 'Not available'  // Display ABN if available
+        });
+        container.appendChild(storeSection);
+
+        // Transaction Details
+        const transactionSection = createSection('Transaction Details', {
+            'Date': analysis.date,
+            'Subtotal': `$${analysis.totals.subtotal.toFixed(2)}`,
+            'Tax': `$${analysis.totals.tax.toFixed(2)}`,
+            'Total': `$${analysis.totals.total.toFixed(2)}`,
+            'Payment Method': analysis.payment.method
+        });
+        container.appendChild(transactionSection);
+
+        // Items Section with Categories
+        const itemsSection = document.createElement('div');
+        itemsSection.className = 'result-card';
+        itemsSection.innerHTML = `
+            <h3>Items Purchased</h3>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Category</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${analysis.items.map(item => `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>
+                                <span class="category-badge category-${item.category_id}">
+                                    ${item.category_name}
+                                    <span class="category-id">(ID: ${item.category_id})</span>
+                                </span>
+                            </td>
+                            <td>${item.quantity}</td>
+                            <td>$${item.price.toFixed(2)}</td>
+                            <td>$${item.total.toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        container.appendChild(itemsSection);
+
+        // Category Summary Section
+        const categorySummary = {};
+        analysis.items.forEach(item => {
+            if (!categorySummary[item.category_id]) {
+                categorySummary[item.category_id] = {
+                    name: item.category_name,
+                    total: 0
+                };
+            }
+            categorySummary[item.category_id].total += item.total;
+        });
+
+        const categorySection = document.createElement('div');
+        categorySection.className = 'result-card';
+        categorySection.innerHTML = `
+            <h3>Spending by Category</h3>
+            <div class="category-summary">
+                ${Object.entries(categorySummary).map(([id, data]) => `
+                    <div class="category-item">
+                        <span class="category-badge category-${id}">
+                            ${data.name} (ID: ${id})
+                        </span>
+                        <span class="category-total">$${data.total.toFixed(2)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        container.appendChild(categorySection);
+
+        // Button container
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        buttonContainer.style.marginTop = '20px';
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.gap = '10px';
+        buttonContainer.style.justifyContent = 'center';
+
+        // Add save button
+        const saveButton = document.createElement('button');
+        saveButton.className = 'btn btn-success';
+        saveButton.textContent = 'Save Receipt';
+        saveButton.onclick = async () => {
+            try {
+                showProgress(true);
+                updateProgress(90, 'Saving to database...');
+                
+                const response = await fetch('/save-receipt', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+    },
+    body: JSON.stringify({ analysis })
+});
+
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Receipt saved successfully!');
+                } else {
+                    throw new Error(data.message || 'Failed to save receipt');
+                }
+            } catch (error) {
+                showError('Failed to save receipt: ' + error.message);
+            } finally {
+                showProgress(false);
+            }
+        };
+        buttonContainer.appendChild(saveButton);
+
+        // Add "Scan Another" button
+        const scanButton = document.createElement('button');
+        scanButton.className = 'btn btn-primary';
+        scanButton.textContent = 'Scan Another Receipt';
+        scanButton.onclick = startOver;
+        buttonContainer.appendChild(scanButton);
+
+        // Add buttons to container
+        container.appendChild(buttonContainer);
+
+        // Add to result section
+        document.getElementById('resultSection').appendChild(container);
+        document.getElementById('resultSection').style.display = 'block';
+        document.getElementById('dropZone').style.display = 'none';
+
+    } catch (error) {
+        console.error('Error displaying results:', error);
+        showError('Error displaying results: ' + error.message);
+    }
+}
+function startOver() {
+    // Reset file input
+    document.getElementById('fileInput').value = '';
+    
+    // Clear preview if exists
+    const previewImage = document.getElementById('previewImage');
+    if (previewImage) {
+        previewImage.src = '';
+        previewImage.style.display = 'none';
+    }
+
+    // Stop camera if it's running
+    if (stream) {
+        stopCamera();
+    }
+
+    // Hide results section
+    document.getElementById('resultSection').style.display = 'none';
+    
+    // Show drop zone
+    document.getElementById('dropZone').style.display = 'block';
+    
+    // Hide progress
+    showProgress(false);
+    
+    // Clear any errors or success messages
+    document.getElementById('errorMessage').style.display = 'none';
+    document.getElementById('successMessage').style.display = 'none';
+}
+
+    </script>
+</body>
+</html>

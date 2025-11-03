@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt History</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f3f4f6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .receipt-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .items-table th, .items-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .view-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .main-nav {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .main-nav a {
+        color: #6b7280;
+        text-decoration: none;
+        font-weight: 500;
+        position: relative;
+        padding: 5px 0;
+    }
+    
+    .main-nav a.active {
+        color: #2563eb;
+    }
+    
+    .main-nav a.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #2563eb;
+        border-radius: 2px;
+    }
+    
+    .menu-dropdown {
+        position: relative;
+    }
+    
+    .menu-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .menu-button:hover {
+        background-color: #f3f4f6;
+    }
+    
+    .menu-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .menu-icon span {
+        width: 4px;
+        height: 4px;
+        background-color: #6b7280;
+        border-radius: 50%;
+    }
+    
+    .dropdown-content {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        min-width: 180px;
+        z-index: 1000;
+        display: none;
+        overflow: hidden;
+    }
+    
+    .dropdown-content.show {
+        display: block;
+    }
+    
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: #374151;
+        transition: background-color 0.2s;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f3f4f6;
+    }
+    
+    .dropdown-item i {
+        margin-right: 12px;
+        font-size: 18px;
+    }
+    
+    .dropdown-divider {
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 4px 0;
+    }
+    
+    .logout-item {
+        color: #ef4444;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 640px) {
+        .main-nav {
+            gap: 12px;
+        }
+    }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-bar">
+            <a href="/">Home</a>
+            <a href="/history.html">Receipt History</a>
+            <a href="/login.html" id="loginLink">Login</a>
+            <a href="#" id="logoutLink" style="display:none;">Logout</a>
+        </div>
+
+        <h1>Receipt History</h1>
+        <div id="receiptsList"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('authToken');
+    const loginLink = document.getElementById('loginLink');
+    const logoutLink = document.getElementById('logoutLink');
+    
+    if (token) {
+        loginLink.style.display = 'none';
+        logoutLink.style.display = 'inline';
+        
+        // Add logout functionality
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            window.location.href = '/login.html';
+        });
+    } else {
+        loginLink.style.display = 'inline';
+        logoutLink.style.display = 'none';
+    }
+});
+async function loadReceipts() {
+    try {
+        // Get auth token from localStorage
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+            console.error('No authentication token found');
+            // Redirect to login if desired
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        const response = await fetch('/receipts', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        const receiptsDiv = document.getElementById('receiptsList');
+        if (data.success) {
+            receiptsDiv.innerHTML = data.receipts.map(receipt => `
+                <div class="receipt-card" data-receipt-id="${receipt.receipt_id}">
+                    <div class="receipt-header">
+                        <div>
+                            <h3>${receipt.store_name}</h3>
+                            <p>Date: ${new Date(receipt.receipt_date).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                            <p>Total: $${receipt.total}</p>
+                            <button class="view-button" onclick="viewReceipt('${receipt.receipt_id}')">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading receipts:', error);
+    }
+}
+async function viewReceipt(id) {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.error('No authentication token found');
+            return;
+        }
+        
+        const response = await fetch(`/receipts/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const receipt = data.receipt;
+            const receiptDiv = document.querySelector(`[data-receipt-id="${id}"]`);
+            
+            // Create items table
+            const itemsTable = `
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${receipt.items.map(item => `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                <td>$${item.price}</td>
+                                <td>$${item.total_price}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            receiptDiv.innerHTML += itemsTable;
+        }
+    } catch (error) {
+        console.error('Error loading receipt details:', error);
+    }
+}
+
+        // Load receipts when page loads
+        document.addEventListener('DOMContentLoaded', loadReceipts);
+    </script>
+</body>
+</html>
