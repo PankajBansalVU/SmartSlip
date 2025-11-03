@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { User, Mail, Crown, Calendar, CreditCard, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/auth-context';
 import { useSubscription } from '../contexts/subscription-context';
@@ -8,7 +8,7 @@ import UsageQuota from '../components/UsageQuota';
 
 const ProfilePage: React.FC = () => {
   const { user } = useAuth();
-  const { subscription, usage, isPremium } = useSubscription();
+  const { subscription, isPremium } = useSubscription();
   const navigate = useNavigate();
 
   return (

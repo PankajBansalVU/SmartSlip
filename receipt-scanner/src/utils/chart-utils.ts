@@ -1,6 +1,6 @@
 // src/utils/chart-utils.ts
 import Chart from 'chart.js/auto';
-import { CategoryScale, LinearScale, PieController, ArcElement, BarController, BarElement, LineController, LineElement, PointElement, Tooltip, Legend } from 'chart.js';
+import { CategoryScale, LinearScale, PieController, ArcElement, BarController, BarElement, LineController, LineElement, PointElement, Tooltip, Legend, TooltipItem, ScriptableScaleContext } from 'chart.js';
 
 // Register Chart.js components to avoid tree-shaking issues
 Chart.register(
@@ -75,7 +75,7 @@ export const initCategoryChart = (
         },
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function(context: TooltipItem<'pie'>) {
               const label = context.label || '';
               const value = context.raw as number;
               const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0) as number;
@@ -136,7 +136,7 @@ export const initTimeChart = (
         y: {
           beginAtZero: true,
           ticks: {
-            callback: function(value) {
+            callback: function(value: string | number) {
               return formatCurrency(value as number);
             }
           }
@@ -145,8 +145,8 @@ export const initTimeChart = (
       plugins: {
         tooltip: {
           callbacks: {
-            label: function(context) {
-              return formatCurrency(context.parsed.y);
+            label: function(context: TooltipItem<'bar'>) {
+              return formatCurrency(context.parsed.y ?? 0);
             }
           }
         },

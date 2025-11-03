@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Crown, Calendar, CreditCard, Download, Loader } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Calendar, CreditCard, Loader } from 'lucide-react';
 import { useAuth } from '../contexts/auth-context';
 import { useSubscription } from '../contexts/subscription-context';
 import { subscriptionService } from '../services/subscriptionService';
@@ -10,18 +10,12 @@ import UsageQuota from '../components/UsageQuota';
 
 const SubscriptionPage: React.FC = () => {
   const { token } = useAuth();
-  const { subscription, usage, isPremium, refreshSubscription } = useSubscription();
+  const { subscription, isPremium, refreshSubscription } = useSubscription();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
 
-  useEffect(() => {
-    if (isPremium() && token) {
-      fetchInvoices();
-    }
-  }, [isPremium, token]);
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     if (!token) return;
     try {
       const data = await subscriptionService.getInvoices(token);
@@ -29,7 +23,13 @@ const SubscriptionPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching invoices:', error);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (isPremium() && token) {
+      fetchInvoices();
+    }
+  }, [isPremium, token, fetchInvoices]);
 
   const handleManageBilling = async () => {
     if (!token) return;
