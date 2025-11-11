@@ -2,16 +2,27 @@ const mysql = require('mysql2');
 require('dotenv').config();
 
 // Create MySQL connection pool with environment variables for security
-const pool = mysql.createPool({
+const poolConfig = {
     host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD,  // Use environment variable for security
+    password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME || 'receipt_analyzer',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    timezone: '+00:00'  // Use UTC timezone
-}).promise();  // Convert pool to promise-based
+    timezone: '+00:00',
+    connectTimeout: 30000  // 30 seconds timeout for Aiven
+};
+
+// Add SSL configuration if required (e.g., for Aiven)
+if (process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production') {
+    poolConfig.ssl = {
+        rejectUnauthorized: false  // Required for Aiven and other managed databases
+    };
+}
+
+const pool = mysql.createPool(poolConfig).promise();
 
 // Test connection on startup with retry logic for Railway
 async function testConnection(retries = 5, delay = 3000) {
