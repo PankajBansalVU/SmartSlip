@@ -4,6 +4,58 @@ const stripeConfig = require('../config/stripe.config');
 const pool = require('../config/db.config');
 
 // =====================================================
+// POST /api/webhooks/test-webhook (DEVELOPMENT ONLY)
+// Test webhook without signature verification
+// Use this for local testing without Stripe CLI
+// =====================================================
+router.post('/test-webhook', async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ error: 'Test endpoint disabled in production' });
+    }
+
+    console.log('🧪 TEST WEBHOOK RECEIVED:', JSON.stringify(req.body, null, 2));
+
+    const event = req.body;
+
+    try {
+        switch (event.type) {
+            case 'checkout.session.completed':
+                await handleCheckoutSessionCompleted(event.data.object);
+                break;
+
+            case 'customer.subscription.created':
+                await handleSubscriptionCreated(event.data.object);
+                break;
+
+            case 'customer.subscription.updated':
+                await handleSubscriptionUpdated(event.data.object);
+                break;
+
+            case 'customer.subscription.deleted':
+                await handleSubscriptionDeleted(event.data.object);
+                break;
+
+            case 'invoice.paid':
+                await handleInvoicePaid(event.data.object);
+                break;
+
+            case 'invoice.payment_failed':
+                await handleInvoicePaymentFailed(event.data.object);
+                break;
+
+            default:
+                console.log(`Unhandled event type: ${event.type}`);
+        }
+
+        res.json({ received: true, message: 'Test webhook processed successfully' });
+
+    } catch (error) {
+        console.error('Error processing test webhook:', error);
+        res.status(500).json({ error: 'Webhook processing failed', details: error.message });
+    }
+});
+
+// =====================================================
 // POST /api/webhooks/webhook
 // Handle Stripe webhook events
 // NOTE: express.raw() middleware is applied in server.js

@@ -573,30 +573,36 @@ export default function HistoryPage() {
             <div className="row g-3">
               {/* Search */}
               <div className="col-md-4">
+                <label htmlFor="receipt-search" className="visually-hidden">Search receipts</label>
                 <div className="input-group">
                   <span className="input-group-text">
                     <Search size={16} />
                   </span>
                   <input
+                    id="receipt-search"
                     type="text"
                     className="form-control"
                     placeholder="Search receipts..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    aria-label="Search receipts by store name, payment method, or location"
                   />
                 </div>
               </div>
 
               {/* Filter */}
               <div className="col-md-3">
+                <label htmlFor="payment-filter" className="visually-hidden">Filter by payment method</label>
                 <div className="input-group">
                   <span className="input-group-text">
                     <Filter size={16} />
                   </span>
                   <select
+                    id="payment-filter"
                     className="form-select"
                     value={filterBy}
                     onChange={(e) => setFilterBy(e.target.value)}
+                    aria-label="Filter receipts by payment method"
                   >
                     <option value="all">All Payment Methods</option>
                     <option value="credit">Credit Card</option>
@@ -608,10 +614,13 @@ export default function HistoryPage() {
 
               {/* Sort */}
               <div className="col-md-3">
+                <label htmlFor="receipt-sort" className="visually-hidden">Sort receipts</label>
                 <select
+                  id="receipt-sort"
                   className="form-select"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
+                  aria-label="Sort receipts by date, amount, or store name"
                 >
                   <option value="receipt_date">Sort by Date</option>
                   <option value="total">Sort by Amount</option>
@@ -802,28 +811,37 @@ export default function HistoryPage() {
                                 // Edit mode for item
                                 <>
                                   <td>
+                                    <label htmlFor={`item-name-${item.item_id}`} className="visually-hidden">Item name</label>
                                     <input
+                                      id={`item-name-${item.item_id}`}
                                       type="text"
                                       className="form-control form-control-sm"
                                       value={editingItem.name}
                                       onChange={(e) => handleItemChange('name', e.target.value)}
+                                      aria-label="Item name"
                                     />
                                   </td>
                                   <td>
+                                    <label htmlFor={`item-quantity-${item.item_id}`} className="visually-hidden">Item quantity</label>
                                     <input
+                                      id={`item-quantity-${item.item_id}`}
                                       type="number"
                                       className="form-control form-control-sm text-end"
                                       value={editingItem.quantity}
                                       onChange={(e) => handleItemChange('quantity', e.target.value ? parseInt(e.target.value) : 0)}
+                                      aria-label="Item quantity"
                                     />
                                   </td>
                                   <td>
+                                    <label htmlFor={`item-price-${item.item_id}`} className="visually-hidden">Item price</label>
                                     <input
+                                      id={`item-price-${item.item_id}`}
                                       type="number"
                                       step="0.01"
                                       className="form-control form-control-sm text-end"
                                       value={editingItem.price}
                                       onChange={(e) => handleItemChange('price', e.target.value ? parseFloat(e.target.value) : 0)}
+                                      aria-label="Item price"
                                     />
                                   </td>
                                   <td>
@@ -897,7 +915,7 @@ export default function HistoryPage() {
 
       {/* Confirmation Modal */}
       {showConfirmDialog && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+        <div className="modal fade show d-block modal-backdrop-custom" tabIndex={-1}>
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">

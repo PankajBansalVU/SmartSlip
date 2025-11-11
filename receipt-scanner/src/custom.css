@@ -64,3 +64,26 @@
   .icon {
     margin-right: 6px;
   }
+
+  /* Modal backdrop */
+  .modal-backdrop-custom {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  /* Video camera styles */
+  .video-camera {
+    max-height: 400px;
+    object-fit: contain;
+    background: #000;
+  }
+
+  /* Drag and drop area cursor */
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  /* Toggle switch large */
+  .toggle-switch-lg {
+    font-size: 1.5rem;
+    cursor: pointer;
+  }

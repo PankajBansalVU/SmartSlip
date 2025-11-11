@@ -41,7 +41,7 @@ interface ReceiptAnalysis {
 
 export default function HomePage() {
   const { token } = useAuth()
-  const { subscription, usage, canUpload } = useSubscription()
+  const { canUpload } = useSubscription()
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -277,12 +277,12 @@ export default function HomePage() {
               <Upload size={18} />
               <span>Upload Receipt</span>
             </button>
-            <input 
-              id="file-upload" 
-              type="file" 
-              accept="image/*,.pdf" 
-              onChange={handleFileChange} 
-              style={{ display: 'none' }} 
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+              className="file-input"
             />
 
             <button
@@ -296,12 +296,11 @@ export default function HomePage() {
 
           {isCameraActive ? (
             <div className="position-relative mb-4 rounded border overflow-hidden">
-              <video 
-                ref={videoRef} 
-                autoPlay 
-                playsInline 
-                className="w-100" 
-                style={{ maxHeight: '400px', objectFit: 'contain', background: '#000' }} 
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-100 video-camera"
               />
               <div className="position-absolute bottom-0 start-0 end-0 d-flex justify-content-center p-3">
                 <button 
@@ -333,7 +332,6 @@ export default function HomePage() {
               <div className="card-body">
                 <div
                   className="border border-2 border-dashed rounded p-4 text-center cursor-pointer"
-                  style={{ cursor: 'pointer' }}
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onClick={() => document.getElementById("file-upload")?.click()}
@@ -355,12 +353,12 @@ export default function HomePage() {
                 <span>{progress}%</span>
               </div>
               <div className="progress">
-                <div 
-                  className="progress-bar" 
-                  role="progressbar" 
-                  style={{ width: `${progress}%` }} 
-                  aria-valuenow={progress} 
-                  aria-valuemin={0} 
+                <div
+                  className="progress-bar"
+                  role="progressbar"
+                  style={{ width: `${progress}%` }}
+                  aria-valuenow={progress}
+                  aria-valuemin={0}
                   aria-valuemax={100}
                 />
               </div>

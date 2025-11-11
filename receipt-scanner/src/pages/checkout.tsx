@@ -23,6 +23,7 @@ const CheckoutPage: React.FC = () => {
       return;
     }
     fetchPlans();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPlans = async () => {
@@ -79,11 +80,11 @@ const CheckoutPage: React.FC = () => {
           <span className={!isAnnual ? 'fw-bold' : 'text-muted'}>Monthly</span>
           <div className="form-check form-switch">
             <input
-              className="form-check-input"
+              className="form-check-input toggle-switch-lg"
               type="checkbox"
               checked={isAnnual}
               onChange={() => setIsAnnual(!isAnnual)}
-              style={{ fontSize: '1.5rem', cursor: 'pointer' }}
+              aria-label="Toggle between monthly and annual billing"
             />
           </div>
           <span className={isAnnual ? 'fw-bold' : 'text-muted'}>
