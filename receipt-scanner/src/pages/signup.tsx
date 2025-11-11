@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Alert, AlertDescription } from "../components/ui/alert"
 import { Progress } from "../components/ui/progress"
 import { useAuth } from "../contexts/auth-context"
+import { API_ENDPOINTS } from "../config/api"
 
 export default function SignupPage() {
   const [name, setName] = useState("")
@@ -54,7 +55,7 @@ export default function SignupPage() {
     try {
       setIsLoading(true)
 
-      const response = await fetch("/auth/register", {
+      const response = await fetch(API_ENDPOINTS.register, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
