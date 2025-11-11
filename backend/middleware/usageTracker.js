@@ -24,7 +24,7 @@ async function checkReceiptLimit(req, res, next) {
                 u.last_reset_date,
                 sp.receipt_limit
             FROM users u
-            LEFT JOIN subscription_plans sp ON u.subscription_tier = sp.plan_type
+            LEFT JOIN subscription_plans sp ON u.subscription_tier COLLATE utf8mb4_unicode_ci = sp.plan_type COLLATE utf8mb4_unicode_ci
             WHERE u.user_id = ? AND sp.is_active = 1
             LIMIT 1`,
             [userId]
@@ -163,7 +163,7 @@ async function getUserUsage(userId) {
                 sp.receipt_limit,
                 sp.history_days
             FROM users u
-            LEFT JOIN subscription_plans sp ON u.subscription_tier = sp.plan_type
+            LEFT JOIN subscription_plans sp ON u.subscription_tier COLLATE utf8mb4_unicode_ci = sp.plan_type COLLATE utf8mb4_unicode_ci
             WHERE u.user_id = ? AND sp.is_active = 1
             LIMIT 1`,
             [userId]
