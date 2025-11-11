@@ -6,6 +6,15 @@ const fs = require('fs');
 const sharp = require('sharp');
 const PDF = require('pdf-parse');
 require('dotenv').config();
+
+// Debug: Log database configuration on startup
+console.log('🔍 Database Configuration Check:');
+console.log('DB_HOST:', process.env.DB_HOST || 'NOT SET (will default to localhost)');
+console.log('DB_USER:', process.env.DB_USER || 'NOT SET (will default to root)');
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***SET***' : 'NOT SET');
+console.log('DB_NAME:', process.env.DB_NAME || 'NOT SET (will default to receipt_analyzer)');
+console.log('DB_PORT:', process.env.DB_PORT || 'NOT SET (will default to 3306)');
+
 const OpenAI = require('openai');
 const pool = require('./config/db.config');
 const jwt = require('jsonwebtoken');
