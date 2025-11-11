@@ -35,13 +35,34 @@ const PDFDocument = require('pdfkit');
 const mkdirp = require('mkdirp');
 const reportsRoutes = require('./reports.routes');
 
+// CORS configuration - Allow frontend to communicate with backend
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://smartslip-1.onrender.com', // Frontend on Render
+    'https://smartslip.onrender.com',   // Alternative frontend URL
+    process.env.FRONTEND_URL,           // Environment variable for frontend URL
+];
+
+// Filter out undefined values and add wildcard patterns
+const corsOrigins = allowedOrigins.filter(Boolean);
+
 app.use(cors({
-    origin: ['http://localhost:3000',
-        'http://localhost:3001',
-        'https:.ngrok.io',
-        'https:.ngrok-free.app',
-        'https://e3a1-175-33-205-89.ngrok-free.app',
-        ],
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) return callback(null, true);
+
+        // Check if origin is in allowed list or matches wildcard
+        if (corsOrigins.includes(origin) ||
+            origin.includes('.ngrok.io') ||
+            origin.includes('.ngrok-free.app') ||
+            origin.includes('.vercel.app')) {
+            callback(null, true);
+        } else {
+            console.warn('CORS blocked origin:', origin);
+            callback(null, false);
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
