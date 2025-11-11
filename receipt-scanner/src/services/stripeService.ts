@@ -2,8 +2,7 @@ import {
   CheckoutSessionResponse,
   PortalSessionResponse,
 } from '../types/subscription.types';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+import { API_BASE_URL } from '../config/api';
 
 export const stripeService = {
   // Create a Stripe checkout session for subscription

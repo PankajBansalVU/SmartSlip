@@ -8,8 +8,7 @@ import { useAuth } from "../contexts/auth-context"
 import { useSubscription } from "../contexts/subscription-context"
 import UsageQuota from "../components/UsageQuota"
 import Paywall from "../components/Paywall"
-
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "../config/api";
 
 interface ReceiptItem {
   name: string

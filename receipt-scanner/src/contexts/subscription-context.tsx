@@ -6,6 +6,7 @@ import {
   SubscriptionFeatures,
   SubscriptionContextType,
 } from '../types/subscription.types';
+import { API_BASE_URL } from '../config/api';
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
@@ -28,8 +29,6 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
   const [features, setFeatures] = useState<SubscriptionFeatures | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
   // Fetch subscription status from backend
   const fetchSubscriptionStatus = async () => {

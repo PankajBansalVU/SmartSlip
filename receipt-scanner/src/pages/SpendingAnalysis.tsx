@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/auth-context"
+import { API_BASE_URL } from "../config/api"
 import {
   BarChart as LucideBarChart,
   ChevronDown,
@@ -141,9 +142,6 @@ export default function SpendingAnalysisPage() {
   
   const { token, isAuthenticated } = useAuth()
   const navigate = useNavigate()
-  
-  // CORS proxy URL for development - set to empty string in production
-  const API_BASE_URL = "http://localhost:3000";
 
   // Color palette for charts
   const CHART_COLORS = [

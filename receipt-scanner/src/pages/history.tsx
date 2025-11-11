@@ -13,8 +13,7 @@ import {
   Search,
   Filter
 } from "lucide-react"
-
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "../config/api"
 
 interface ReceiptItem {
   item_id: number
