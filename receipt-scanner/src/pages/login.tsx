@@ -8,6 +8,7 @@ import { Label } from "../components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { Alert, AlertDescription } from "../components/ui/alert"
 import { useAuth } from "../contexts/auth-context"
+import { API_ENDPOINTS } from "../config/api"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -34,7 +35,7 @@ export default function LoginPage() {
     try {
       setIsLoading(true)
 
-      const response = await fetch("http://localhost:3000/auth/login", {  
+      const response = await fetch(API_ENDPOINTS.login, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
