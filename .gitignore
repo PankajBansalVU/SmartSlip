@@ -2,7 +2,8 @@
 @"
 # Dependencies
 node_modules/
-package-lock.json
+# Package lock files should be committed for production deployments
+# package-lock.json
 
 # Environment variables
 .env
