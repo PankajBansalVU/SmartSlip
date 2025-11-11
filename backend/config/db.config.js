@@ -14,7 +14,7 @@ const pool = mysql.createPool({
 }).promise();  // Convert pool to promise-based
 
 // Test connection on startup with retry logic for Railway
-async function testConnection(retries = 5, delay = 5000) {
+async function testConnection(retries = 5, delay = 3000) {
     for (let i = 0; i < retries; i++) {
         try {
             const connection = await pool.getConnection();
@@ -24,11 +24,11 @@ async function testConnection(retries = 5, delay = 5000) {
         } catch (err) {
             console.error(`✗ Database connection failed (attempt ${i + 1}/${retries}):`, err.message);
             if (i === retries - 1) {
-                console.error('✗ Failed to connect to database after multiple attempts');
-                // Don't exit in production, allow server to start
-                if (process.env.NODE_ENV !== 'production') {
-                    process.exit(1);
-                }
+                console.error('⚠️  Failed to connect to database after multiple attempts');
+                console.error('⚠️  Server will start but database operations will fail');
+                console.error('⚠️  Check environment variables: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT');
+                // Don't exit - allow server to start anyway
+                return;
             } else {
                 console.log(`Retrying in ${delay / 1000} seconds...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
@@ -37,6 +37,9 @@ async function testConnection(retries = 5, delay = 5000) {
     }
 }
 
-testConnection();
+// Only test connection after a delay to let Railway set up services
+setTimeout(() => {
+    testConnection();
+}, 2000);
 
 module.exports = pool;
