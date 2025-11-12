@@ -162,7 +162,7 @@ export default function HomePage() {
       }
 
       // Check if we're on HTTPS (required for camera on mobile)
-      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
         showToast({
           variant: "destructive",
           title: "HTTPS Required",
