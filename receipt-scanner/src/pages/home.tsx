@@ -151,21 +151,67 @@ export default function HomePage() {
 
   const initCamera = async () => {
     try {
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showToast({
+          variant: "destructive",
+          title: "Camera Not Supported",
+          description: "Your browser doesn't support camera access. Please use a modern browser or upload a photo instead.",
+        })
+        return
+      }
+
+      // Check if we're on HTTPS (required for camera on mobile)
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        showToast({
+          variant: "destructive",
+          title: "HTTPS Required",
+          description: "Camera access requires a secure connection (HTTPS).",
+        })
+        return
+      }
+
+      console.log('Requesting camera access...')
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } },
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
       })
+
+      console.log('Camera access granted')
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        // Wait for video to be ready
+        await videoRef.current.play()
       }
 
       streamRef.current = stream
       setIsCameraActive(true)
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Camera error:', error)
+
+      let errorMessage = "Could not access camera. "
+
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage += "Please grant camera permissions in your browser settings."
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        errorMessage += "No camera found on your device."
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        errorMessage += "Camera is already in use by another application."
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage += "Camera doesn't meet the requirements."
+      } else {
+        errorMessage += error.message || "Unknown error occurred."
+      }
+
       showToast({
         variant: "destructive",
         title: "Camera Error",
-        description: "Could not access camera. Please check permissions.",
+        description: errorMessage,
       })
     }
   }
@@ -269,7 +315,7 @@ export default function HomePage() {
       {!analysis ? (
         <>
           <div className="d-flex flex-column flex-sm-row justify-content-center gap-3 mb-4">
-            <button 
+            <button
               className="btn btn-primary d-flex align-items-center justify-content-center gap-2"
               onClick={() => document.getElementById("file-upload")?.click()}
             >
@@ -284,8 +330,26 @@ export default function HomePage() {
               className="file-input"
             />
 
+            {/* Mobile camera fallback */}
             <button
-              className={`btn ${isCameraActive ? 'btn-danger' : 'btn-primary'} d-flex align-items-center justify-content-center gap-2`}
+              className="btn btn-primary d-flex align-items-center justify-content-center gap-2 d-md-none"
+              onClick={() => document.getElementById("camera-capture")?.click()}
+            >
+              <Camera size={18} />
+              <span>Take Photo</span>
+            </button>
+            <input
+              id="camera-capture"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileChange}
+              className="file-input"
+            />
+
+            {/* Desktop/Advanced camera */}
+            <button
+              className={`btn ${isCameraActive ? 'btn-danger' : 'btn-primary'} d-flex align-items-center justify-content-center gap-2 d-none d-md-flex`}
               onClick={isCameraActive ? stopCamera : initCamera}
             >
               <Camera size={18} />
