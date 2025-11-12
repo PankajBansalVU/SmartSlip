@@ -188,3 +188,50 @@ html, body {
   body.dropdown-open {
     overflow: hidden;
   }
+
+  /* Spending Analysis mobile optimizations */
+  @media (max-width: 768px) {
+    /* Make charts stack vertically on mobile */
+    .recharts-wrapper {
+      margin: 0 auto;
+    }
+
+    /* Better chart container on mobile */
+    .recharts-surface {
+      overflow: visible;
+    }
+
+    /* Optimize card spacing */
+    .row.g-4 {
+      gap: 1rem !important;
+    }
+
+    /* Make summary cards full width on mobile */
+    .col-md-4, .col-md-6 {
+      width: 100% !important;
+      padding: 0 !important;
+      margin-bottom: 1rem;
+    }
+
+    /* Reduce padding in cards for mobile */
+    .card-body {
+      padding: 0.75rem !important;
+    }
+
+    /* Better table on mobile */
+    .table {
+      font-size: 0.875rem;
+    }
+
+    .table td, .table th {
+      padding: 0.5rem 0.25rem !important;
+    }
+
+    /* Hide some columns on very small screens */
+    @media (max-width: 576px) {
+      .table td:nth-child(3),
+      .table th:nth-child(3) {
+        display: none;
+      }
+    }
+  }

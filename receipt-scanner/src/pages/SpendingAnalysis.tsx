@@ -773,25 +773,12 @@ export default function SpendingAnalysisPage() {
           
           {/* Action Buttons */}
           <div className="d-flex flex-wrap gap-2 mb-4">
-            <button 
+            <button
               className="btn btn-outline-primary d-flex align-items-center gap-2"
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter size={18} />
               <span>{showFilters ? 'Hide Filters' : 'Filter Options'}</span>
-            </button>
-            <button 
-              className="btn btn-outline-success d-flex align-items-center gap-2"
-              onClick={generateReport}
-              disabled={isGeneratingReport}
-            >
-              <Download size={18} />
-              <span>{isGeneratingReport ? 'Generating...' : 'Download Report'}</span>
-              {isGeneratingReport && (
-                <div className="spinner-border spinner-border-sm ms-2" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              )}
             </button>
           </div>
 
@@ -969,25 +956,28 @@ export default function SpendingAnalysisPage() {
                   {transactions.length > 0 ? (
                     <>
                       {/* Pie Chart Implementation */}
-                      <ResponsiveContainer width="100%" height={300}>
+                      <ResponsiveContainer width="100%" height={350}>
                         <PieChart>
                           <Pie
                             data={getCategoryChartData()}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            outerRadius={80}
+                            outerRadius={window.innerWidth < 768 ? 60 : 80}
                             fill="#8884d8"
                             dataKey="value"
                             nameKey="name"
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            label={window.innerWidth < 768 ? false : ({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                           >
                             {getCategoryChartData().map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
                           <Tooltip formatter={(value: any) => formatCurrency(value as number)} />
-                          <Legend />
+                          <Legend
+                            wrapperStyle={{ fontSize: window.innerWidth < 768 ? '12px' : '14px' }}
+                            iconSize={window.innerWidth < 768 ? 8 : 14}
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     </>
@@ -1010,19 +1000,28 @@ export default function SpendingAnalysisPage() {
                   {transactions.length > 0 ? (
                     <>
                       {/* Bar Chart Implementation */}
-                      <ResponsiveContainer width="100%" height={300}>
+                      <ResponsiveContainer width="100%" height={350}>
                         <BarChart
                           data={getTimeSeriesData()}
                           margin={{
                             top: 5,
-                            right: 30,
-                            left: 20,
+                            right: window.innerWidth < 768 ? 10 : 30,
+                            left: window.innerWidth < 768 ? 0 : 20,
                             bottom: 5,
                           }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis tickFormatter={(value) => `${value}`} />
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
+                            angle={window.innerWidth < 768 ? -45 : 0}
+                            textAnchor={window.innerWidth < 768 ? 'end' : 'middle'}
+                            height={window.innerWidth < 768 ? 60 : 30}
+                          />
+                          <YAxis
+                            tickFormatter={(value) => `${value}`}
+                            tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
+                          />
                           <Tooltip formatter={(value: any) => formatCurrency(value as number)} />
                           <Bar dataKey="amount" fill="#4e73df" />
                         </BarChart>
