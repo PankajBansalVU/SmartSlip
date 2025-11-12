@@ -18,16 +18,92 @@ export default function Navbar() {
           <Receipt className="me-2" />
           <span className="fw-bold">SmartSlip</span>
         </Link>
-        
+
+        {/* Mobile Menu Button - Shows on mobile, parallel to logo */}
+        <div className="dropdown d-lg-none">
+          <button
+            className="btn btn-link text-dark p-1"
+            type="button"
+            id="mobileMenuDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <Menu />
+          </button>
+          <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="mobileMenuDropdown">
+            {!isAuthenticated && (
+              <li>
+                <Link to="/" className="dropdown-item">
+                  Home
+                </Link>
+              </li>
+            )}
+            {isAuthenticated && (
+              <>
+                <li>
+                  <Link to="/app" className="dropdown-item">
+                    Scanner
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/history" className="dropdown-item">
+                    History
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/spending-analysis" className="dropdown-item">
+                    Spending Analysis
+                  </Link>
+                </li>
+              </>
+            )}
+            <li>
+              <Link to="/pricing" className="dropdown-item">
+                Pricing
+              </Link>
+            </li>
+            <li><hr className="dropdown-divider" /></li>
+            {!isAuthenticated ? (
+              <>
+                <li>
+                  <Link to="/login" className="dropdown-item">
+                    Log in
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/signup" className="dropdown-item">
+                    Sign up
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link to="/profile" className="dropdown-item d-flex align-items-center">
+                    <User size={16} className="me-2" />
+                    My Profile
+                  </Link>
+                </li>
+                <li>
+                  <button onClick={logout} className="dropdown-item text-danger d-flex align-items-center">
+                    <LogOut size={16} className="me-2" />
+                    <span>Log out</span>
+                  </button>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+
         <button
-          className="navbar-toggler"
+          className="navbar-toggler d-none"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarContent"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-        
+
         <div className="collapse navbar-collapse" id="navbarContent">
           <ul className="navbar-nav me-auto d-none d-lg-flex">
             {!isAuthenticated && (
@@ -97,12 +173,12 @@ export default function Navbar() {
           
           <div className="d-flex align-items-center gap-3">
             {isAuthenticated ? (
-              <div className="dropdown">
-                <button 
-                  className="btn btn-link text-dark p-1 dropdown-toggle" 
-                  type="button" 
-                  id="userDropdown" 
-                  data-bs-toggle="dropdown" 
+              <div className="dropdown d-none d-lg-block">
+                <button
+                  className="btn btn-link text-dark p-1 dropdown-toggle"
+                  type="button"
+                  id="userDropdown"
+                  data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
                   <User className="rounded-circle" />
@@ -144,73 +220,6 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
-            
-            <div className="dropdown d-lg-none">
-              <button 
-                className="btn btn-link text-dark p-1" 
-                type="button" 
-                id="mobileMenuDropdown" 
-                data-bs-toggle="dropdown" 
-                aria-expanded="false"
-              >
-                <Menu />
-              </button>
-              <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="mobileMenuDropdown">
-                {!isAuthenticated && (
-                  <li>
-                    <Link to="/" className="dropdown-item">
-                      Home
-                    </Link>
-                  </li>
-                )}
-                {isAuthenticated && (
-                  <>
-                    <li>
-                      <Link to="/app" className="dropdown-item">
-                        Scanner
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/history" className="dropdown-item">
-                        History
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/spending-analysis" className="dropdown-item">
-                        Spending Analysis
-                      </Link>
-                    </li>
-                  </>
-                )}
-                <li>
-                  <Link to="/pricing" className="dropdown-item">
-                    Pricing
-                  </Link>
-                </li>
-                <li><hr className="dropdown-divider" /></li>
-                {!isAuthenticated ? (
-                  <>
-                    <li>
-                      <Link to="/login" className="dropdown-item">
-                        Log in
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/signup" className="dropdown-item">
-                        Sign up
-                      </Link>
-                    </li>
-                  </>
-                ) : (
-                  <li>
-                    <button onClick={logout} className="dropdown-item text-danger d-flex align-items-center">
-                      <LogOut size={16} className="me-2" />
-                      <span>Log out</span>
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </div>
           </div>
         </div>
       </div>

@@ -678,9 +678,9 @@ export default function SpendingAnalysisPage() {
               </li>
             </ul>
           </div>
-          <button onClick={fetchInitialData} className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
+          <button onClick={fetchInitialData} className="btn btn-outline-primary btn-sm d-flex align-items-center gap-md-2">
             <RefreshCw size={16} />
-            <span className="d-none d-sm-inline">Refresh</span>
+            <span className="d-none d-md-inline">Refresh</span>
           </button>
         </div>
       </div>

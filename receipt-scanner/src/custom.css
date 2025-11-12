@@ -171,13 +171,19 @@ html, body {
     .h3 {
       font-size: 1.5rem;
     }
-  }
 
-  /* Fix dropdown-menu-end alignment on mobile */
-  @media (max-width: 768px) {
-    .dropdown-menu-end {
+    /* Fix dropdown-menu-end alignment - force right alignment */
+    .dropdown-menu-end,
+    .dropdown-menu.dropdown-menu-end {
       right: 0 !important;
       left: auto !important;
+      transform: none !important;
+    }
+
+    /* Make refresh button icon-only and compact on mobile */
+    .btn-outline-primary.btn-sm {
+      padding: 0.375rem 0.5rem !important;
+      min-width: auto !important;
     }
   }
 
