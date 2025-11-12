@@ -137,17 +137,38 @@ const upload = multer({
     }
 }).single('file');
 
-// Image optimization function
+// Image optimization function with conditional optimization
 async function optimizeImage(filePath) {
-    const optimizedPath = filePath + '-optimized.jpg';
-    await sharp(filePath)
-        .resize(1500, 1500, {
-            fit: 'inside',
-            withoutEnlargement: true
-        })
-        .jpeg({ quality: 85 })
-        .toFile(optimizedPath);
-    return optimizedPath;
+    try {
+        // Get image metadata without processing
+        const metadata = await sharp(filePath).metadata();
+        const fileSize = fs.statSync(filePath).size;
+
+        // Only optimize if image is large or high resolution
+        const needsOptimization =
+            metadata.width > 1500 ||
+            metadata.height > 1500 ||
+            fileSize > 2 * 1024 * 1024;  // > 2MB
+
+        if (!needsOptimization) {
+            console.log('Image already optimized, skipping resize...');
+            return filePath;  // Return original file
+        }
+
+        console.log('Optimizing large image...');
+        const optimizedPath = filePath + '-optimized.jpg';
+        await sharp(filePath)
+            .resize(1500, 1500, {
+                fit: 'inside',
+                withoutEnlargement: true
+            })
+            .jpeg({ quality: 85 })
+            .toFile(optimizedPath);
+        return optimizedPath;
+    } catch (error) {
+        console.error('Optimization check failed, using original:', error);
+        return filePath;  // Fallback to original
+    }
 }
 
 // OCR Processing endpoint
@@ -366,7 +387,7 @@ app.post('/analyze-receipt', async (req, res) => {
         console.log('Analyzing text:', text);
 
         const completion = await openai.chat.completions.create({
-            model: "chatgpt-4o-latest",
+            model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",
@@ -436,7 +457,7 @@ app.post('/analyze-receipt', async (req, res) => {
                 }
             ],
             temperature: 0.1,
-            max_tokens: 2000
+            max_tokens: 1200
         });
 
        try {
@@ -553,38 +574,40 @@ app.post('/save-receipt', authenticateUser, checkReceiptLimit, async (req, res) 
         );
         const receiptId = receiptResult.insertId;
 
-        // Insert items (existing code)
-        for (const item of analysis.items) {
-            await connection.execute(
-                `INSERT INTO receipt_items (receipt_id, name, quantity, price, 
-                    total_price, category_id, category_name)
-                VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    receiptId,
-                    item.name,
-                    item.quantity,
-                    item.price,
-                    item.total,
-                    item.category_id,
-                    item.category_name
-                ]
+        // Batch insert all items at once for better performance
+        if (analysis.items && analysis.items.length > 0) {
+            const itemValues = analysis.items.map(item => [
+                receiptId,
+                item.name,
+                item.quantity,
+                item.price,
+                item.total,
+                item.category_id,
+                item.category_name
+            ]);
+
+            await connection.query(
+                `INSERT INTO receipt_items
+                 (receipt_id, name, quantity, price, total_price, category_id, category_name)
+                 VALUES ?`,
+                [itemValues]
             );
         }
 
-        await connection.commit();
-
-        // Increment user's monthly receipt count
-        await pool.query(
+        // Increment user's monthly receipt count (inside transaction)
+        await connection.execute(
             'UPDATE users SET monthly_receipt_count = monthly_receipt_count + 1 WHERE user_id = ?',
             [req.user.userId]
         );
 
-        // Log usage
-        await pool.query(
+        // Log usage (inside transaction)
+        await connection.execute(
             `INSERT INTO usage_logs (user_id, action_type, metadata)
             VALUES (?, 'receipt_upload', JSON_OBJECT('receipt_id', ?))`,
             [req.user.userId, receiptId]
         ).catch(err => console.error('Error logging usage:', err));
+
+        await connection.commit();
 
         res.json({
             success: true,
