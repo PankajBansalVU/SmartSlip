@@ -173,7 +173,13 @@ html, body {
     }
   }
 
-  /* Keep Bootstrap default dropdown alignment */
+  /* Fix dropdown-menu-end alignment on mobile */
+  @media (max-width: 768px) {
+    .dropdown-menu-end {
+      right: 0 !important;
+      left: auto !important;
+    }
+  }
 
   /* Prevent body scroll when dropdown is open */
   body.dropdown-open {

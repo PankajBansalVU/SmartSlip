@@ -19,13 +19,13 @@ export default function Navbar() {
           <span className="fw-bold">SmartSlip</span>
         </Link>
         
-        <button 
-          className="navbar-toggler" 
-          type="button" 
-          data-bs-toggle="collapse" 
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
           data-bs-target="#navbarContent"
         >
-          <Menu />
+          <span className="navbar-toggler-icon"></span>
         </button>
         
         <div className="collapse navbar-collapse" id="navbarContent">
