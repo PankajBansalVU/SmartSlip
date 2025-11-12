@@ -96,16 +96,11 @@ html, body {
 
   /* Mobile dropdown fixes */
   @media (max-width: 768px) {
-    /* Fix dropdown menu display on mobile */
+    /* Fix dropdown menu display on mobile - let Bootstrap handle positioning */
     .dropdown-menu {
-      position: absolute !important;
-      inset: 0px auto auto 0px !important;
-      margin: 0px !important;
-      transform: translate(0px, 38px) !important;
       max-height: 70vh;
       overflow-y: auto;
       overflow-x: hidden;
-      width: auto;
       min-width: 200px;
       max-width: 90vw;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -178,11 +173,7 @@ html, body {
     }
   }
 
-  /* Fix for export report dropdown alignment */
-  .dropdown-menu-end {
-    right: 0 !important;
-    left: auto !important;
-  }
+  /* Keep Bootstrap default dropdown alignment */
 
   /* Prevent body scroll when dropdown is open */
   body.dropdown-open {
