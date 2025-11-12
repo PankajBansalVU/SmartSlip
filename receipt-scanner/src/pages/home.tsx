@@ -40,7 +40,7 @@ interface ReceiptAnalysis {
 
 export default function HomePage() {
   const { token } = useAuth()
-  const { canUpload } = useSubscription()
+  const { canUpload, refreshSubscription } = useSubscription()
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -271,6 +271,9 @@ export default function HomePage() {
           title: "Receipt saved",
           description: "Your receipt has been saved to your account.",
         })
+
+        // Refresh subscription data to update receipt count
+        await refreshSubscription()
       } else {
         throw new Error(data.message || "Failed to save receipt")
       }
