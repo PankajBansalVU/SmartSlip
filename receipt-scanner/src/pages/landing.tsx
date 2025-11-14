@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Camera,
   Sparkles,
@@ -12,8 +12,24 @@ import {
   BarChart3,
   Clock
 } from 'lucide-react';
+import { useAuth } from '../contexts/auth-context';
 
 const LandingPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect authenticated users to scanner page
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/app');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Don't render landing page for authenticated users
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="landing-page">
       {/* Hero Section */}
@@ -253,8 +269,8 @@ const LandingPage: React.FC = () => {
                   <h5 className="card-title fw-bold">Free</h5>
                   <h3 className="display-6 fw-bold mb-3">$0<small className="text-muted fs-6">/mo</small></h3>
                   <ul className="list-unstyled text-start mb-4">
-                    <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />100 scans/month</li>
-                    <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Basic analytics</li>
+                    <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />10 scans/month</li>
+                    <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Spending dashboard</li>
                     <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Cloud storage</li>
                   </ul>
                   <Link to="/signup" className="btn btn-outline-primary w-100">Get Started</Link>
@@ -271,7 +287,7 @@ const LandingPage: React.FC = () => {
                   <h3 className="display-6 fw-bold mb-3">$5<small className="text-muted fs-6">/mo</small></h3>
                   <ul className="list-unstyled text-start mb-4">
                     <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Unlimited scans</li>
-                    <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Advanced analytics</li>
+                    <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Spending dashboard</li>
                     <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Export reports</li>
                     <li className="mb-2"><CheckCircle size={18} className="text-success me-2" style={{ display: 'inline' }} />Priority support</li>
                   </ul>

@@ -76,7 +76,7 @@ export default function PricingPage() {
               <ul className="list-unstyled">
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
-                  <span>Up to 10 receipts per month</span>
+                  <span>Up to 10 scans per month</span>
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
@@ -84,11 +84,11 @@ export default function PricingPage() {
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
-                  <span>30-day receipt history</span>
+                  <span>Spending dashboard</span>
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
-                  <span>Email support</span>
+                  <span>Cloud storage</span>
                 </li>
               </ul>
             </div>
@@ -125,7 +125,7 @@ export default function PricingPage() {
               <ul className="list-unstyled">
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
-                  <span>Unlimited receipts</span>
+                  <span>Unlimited scans</span>
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
@@ -133,7 +133,7 @@ export default function PricingPage() {
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
-                  <span>Unlimited receipt history</span>
+                  <span>Spending dashboard</span>
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
@@ -145,7 +145,7 @@ export default function PricingPage() {
                 </li>
                 <li className="mb-3 d-flex align-items-center">
                   <Check className="text-success me-2" size={20} />
-                  <span>Spending insights and reports</span>
+                  <span>Cloud storage</span>
                 </li>
               </ul>
             </div>

@@ -14,7 +14,7 @@ export default function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light border-bottom">
       <div className="container">
-        <Link to="/" className="navbar-brand d-flex align-items-center">
+        <Link to={isAuthenticated ? "/app" : "/"} className="navbar-brand d-flex align-items-center">
           <Receipt className="me-2" />
           <span className="fw-bold">SmartSlip</span>
         </Link>

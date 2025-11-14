@@ -8,6 +8,7 @@ import LoginPage from "./pages/login"
 import SignupPage from "./pages/signup"
 import HistoryPage from "./pages/history"
 import ResetPasswordPage from "./pages/reset-password"
+import ForgotPasswordPage from "./pages/forgot-password"
 import PricingPage from "./pages/pricing"
 import Navbar from "./components/navbar"
 import PrivateRoute from "./components/PrivateRoute"
@@ -39,6 +40,7 @@ function App() {
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                   <Route path="/reset-password" element={<ResetPasswordPage />} />
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/checkout" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
