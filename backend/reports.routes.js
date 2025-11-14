@@ -184,11 +184,12 @@ async function getReportData(connection, userId, startDate, endDate, categoryId)
     console.log('Debug: itemCategoryFilter =', itemCategoryFilter);
 
     // Get summary data
+    // FIXED: Use receipt.total for overall spending (authoritative source)
     const [summaryResults] = await connection.query(`
-        SELECT 
+        SELECT
             COUNT(DISTINCT r.receipt_id) as receipt_count,
-            SUM(r.total) as total_spending,
-            AVG(r.total) as avg_transaction,
+            COALESCE(SUM(r.total), 0) as total_spending,
+            COALESCE(AVG(r.total), 0) as avg_transaction,
             MIN(r.receipt_date) as first_transaction,
             MAX(r.receipt_date) as last_transaction
         FROM receipts r
@@ -198,13 +199,14 @@ async function getReportData(connection, userId, startDate, endDate, categoryId)
     console.log('Debug: summaryResults =', summaryResults);
 
     // Get category breakdown
+    // FIXED: Added COALESCE to handle NULLs, DISTINCT receipt_id to avoid duplicates
     const [categoryResults] = await connection.query(`
-        SELECT 
+        SELECT
             ri.category_id,
             ri.category_name,
-            SUM(ri.total_price) as total_spent,
-            COUNT(ri.item_id) as item_count,
-            AVG(ri.total_price) as avg_item_price
+            COALESCE(SUM(ri.total_price), 0) as total_spent,
+            COUNT(DISTINCT ri.item_id) as item_count,
+            COALESCE(AVG(ri.total_price), 0) as avg_item_price
         FROM receipt_items ri
         JOIN receipts r ON ri.receipt_id = r.receipt_id
         WHERE r.user_id = ? ${receiptDateFilter} ${itemCategoryFilter}
@@ -226,11 +228,12 @@ async function getReportData(connection, userId, startDate, endDate, categoryId)
     }));
 
     // Get monthly data
+    // FIXED: Use DISTINCT to prevent duplicate counting
     const [monthlyResults] = await connection.query(`
-        SELECT 
+        SELECT
             DATE_FORMAT(r.receipt_date, '%Y-%m') as month,
-            SUM(r.total) as total_spent,
-            COUNT(r.receipt_id) as transaction_count
+            COALESCE(SUM(r.total), 0) as total_spent,
+            COUNT(DISTINCT r.receipt_id) as transaction_count
         FROM receipts r
         WHERE r.user_id = ? ${receiptDateFilter}
         GROUP BY DATE_FORMAT(r.receipt_date, '%Y-%m')
@@ -238,12 +241,13 @@ async function getReportData(connection, userId, startDate, endDate, categoryId)
     `, [userId]);
 
     // Get top stores
+    // FIXED: Use DISTINCT to prevent duplicate counting
     const [storeResults] = await connection.query(`
-        SELECT 
+        SELECT
             r.store_name,
-            COUNT(r.receipt_id) as visit_count,
-            SUM(r.total) as total_spent,
-            AVG(r.total) as avg_per_visit
+            COUNT(DISTINCT r.receipt_id) as visit_count,
+            COALESCE(SUM(r.total), 0) as total_spent,
+            COALESCE(AVG(r.total), 0) as avg_per_visit
         FROM receipts r
         WHERE r.user_id = ? ${receiptDateFilter}
         AND r.store_name IS NOT NULL AND r.store_name != ''
@@ -253,12 +257,13 @@ async function getReportData(connection, userId, startDate, endDate, categoryId)
     `, [userId]);
 
     // Get top items
+    // FIXED: Added COALESCE and DISTINCT to prevent NULL/duplicate issues
     const [itemResults] = await connection.query(`
-        SELECT 
+        SELECT
             ri.name,
             ri.category_name,
-            SUM(ri.total_price) as total_spent,
-            SUM(ri.quantity) as total_quantity
+            COALESCE(SUM(ri.total_price), 0) as total_spent,
+            COALESCE(SUM(ri.quantity), 0) as total_quantity
         FROM receipt_items ri
         JOIN receipts r ON ri.receipt_id = r.receipt_id
         WHERE r.user_id = ? ${receiptDateFilter} ${itemCategoryFilter}

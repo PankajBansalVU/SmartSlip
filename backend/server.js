@@ -535,15 +535,60 @@ app.post('/save-receipt', authenticateUser, checkReceiptLimit, async (req, res) 
         await connection.beginTransaction();
 
         const { analysis } = req.body;
-        
+
         // Parse the date
         const parsedDate = parseReceiptDate(analysis.date);
-        
+
         // Format for MySQL (YYYY-MM-DD HH:MM:SS)
-        const formattedDate = parsedDate ? 
-            parsedDate.toISOString().slice(0, 19).replace('T', ' ') : 
+        const formattedDate = parsedDate ?
+            parsedDate.toISOString().slice(0, 19).replace('T', ' ') :
             null;
-        
+
+        // ============================================
+        // DUPLICATE DETECTION - Check before saving
+        // ============================================
+        const [duplicateCheck] = await connection.execute(`
+            SELECT
+                receipt_id,
+                store_name,
+                total,
+                receipt_date,
+                created_at
+            FROM receipts
+            WHERE user_id = ?
+            AND store_name = ?
+            AND total = ?
+            AND DATE(receipt_date) = DATE(?)
+            LIMIT 1
+        `, [
+            req.user.userId,
+            analysis.store.name,
+            analysis.totals.total,
+            formattedDate || new Date()
+        ]);
+
+        if (duplicateCheck.length > 0) {
+            await connection.rollback();
+            return res.status(409).json({
+                success: false,
+                isDuplicate: true,
+                message: 'Possible duplicate receipt detected',
+                duplicateReceipt: {
+                    id: duplicateCheck[0].receipt_id,
+                    store: duplicateCheck[0].store_name,
+                    total: duplicateCheck[0].total,
+                    date: duplicateCheck[0].receipt_date,
+                    savedAt: duplicateCheck[0].created_at
+                },
+                currentReceipt: {
+                    store: analysis.store.name,
+                    total: analysis.totals.total,
+                    date: formattedDate
+                }
+            });
+        }
+        // ============================================
+
         // Insert receipt with both original and parsed date
         const [receiptResult] = await connection.execute(
             `INSERT INTO receipts (
@@ -635,7 +680,7 @@ app.post('/save-receipt', authenticateUser, checkReceiptLimit, async (req, res) 
 app.get('/receipts', authenticateUser, async (req, res) => {
     try {
         const [receipts] = await pool.query(`
-            SELECT * FROM receipts 
+            SELECT * FROM receipts
             WHERE user_id = ? OR user_id IS NULL
             ORDER BY receipt_date DESC
         `, [req.user.userId]);
@@ -650,6 +695,71 @@ app.get('/receipts', authenticateUser, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch receipts',
+            error: error.message
+        });
+    }
+});
+
+// NEW: Get duplicate receipts for user review
+app.get('/receipts/duplicates', authenticateUser, async (req, res) => {
+    try {
+        const [duplicates] = await pool.query(`
+            SELECT
+                GROUP_CONCAT(receipt_id ORDER BY receipt_id) as receipt_ids,
+                store_name,
+                total,
+                receipt_date,
+                COUNT(*) as duplicate_count,
+                MIN(created_at) as first_saved,
+                MAX(created_at) as last_saved
+            FROM receipts
+            WHERE user_id = ?
+            GROUP BY user_id, store_name, total, DATE(receipt_date)
+            HAVING COUNT(*) > 1
+            ORDER BY last_saved DESC
+        `, [req.user.userId]);
+
+        // Get detailed info for each duplicate group
+        const duplicateDetails = await Promise.all(duplicates.map(async (dup) => {
+            const receiptIds = dup.receipt_ids.split(',').map(id => parseInt(id));
+
+            const [receipts] = await pool.query(`
+                SELECT
+                    r.receipt_id,
+                    r.store_name,
+                    r.total,
+                    r.receipt_date,
+                    r.created_at,
+                    COUNT(ri.item_id) as item_count
+                FROM receipts r
+                LEFT JOIN receipt_items ri ON r.receipt_id = ri.receipt_id
+                WHERE r.receipt_id IN (?)
+                GROUP BY r.receipt_id
+                ORDER BY r.created_at ASC
+            `, [receiptIds]);
+
+            return {
+                duplicateGroup: {
+                    store: dup.store_name,
+                    total: dup.total,
+                    date: dup.receipt_date,
+                    count: dup.duplicate_count
+                },
+                receipts: receipts
+            };
+        }));
+
+        res.json({
+            success: true,
+            duplicateCount: duplicates.length,
+            duplicates: duplicateDetails
+        });
+
+    } catch (error) {
+        console.error('Fetch duplicates error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch duplicate receipts',
             error: error.message
         });
     }

@@ -5,6 +5,7 @@ const router = express.Router();
 const pool = require('./config/db.config');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { validateEmailSync } = require('./utils/emailValidation');
 
 // Configure mail transporter
 const transporter = nodemailer.createTransport({
@@ -31,13 +32,19 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // Email format validation
-        const emailRegex = /^\S+@\S+\.\S+$/;
-        if (!emailRegex.test(email)) {
+        // Enhanced email validation (blocks fake/disposable emails)
+        const emailValidation = validateEmailSync(email);
+        if (!emailValidation.valid) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide a valid email address'
+                message: emailValidation.errors[0] || 'Invalid email address',
+                suggestion: emailValidation.suggestion // Suggest correction if typo detected
             });
+        }
+
+        // Warn user if email looks like a typo (optional: could return warning to frontend)
+        if (emailValidation.suggestion) {
+            console.log(`⚠️  Possible email typo during registration: ${email}, suggested: ${emailValidation.suggestion}`);
         }
 
         // Password strength validation
@@ -294,6 +301,16 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Email is required'
+            });
+        }
+
+        // Validate email format (prevent fake emails in password reset)
+        const emailValidation = validateEmailSync(email);
+        if (!emailValidation.valid) {
+            // Return success anyway for security (don't reveal invalid emails)
+            return res.json({
+                success: true,
+                message: 'If your email is registered, you will receive a password reset link'
             });
         }
 
