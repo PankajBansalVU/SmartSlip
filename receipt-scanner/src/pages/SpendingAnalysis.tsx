@@ -636,10 +636,38 @@ export default function SpendingAnalysisPage() {
 
   return (
     <div className="container py-4">
+      <style>{`
+        @media (max-width: 768px) {
+          .spending-analysis-dropdown {
+            position: relative;
+          }
+
+          .spending-analysis-dropdown .dropdown-menu {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: auto !important;
+            transform: none !important;
+            margin-top: 0.5rem;
+            min-width: 220px;
+            width: max-content;
+            max-width: calc(100vw - 2rem);
+          }
+
+          .spending-analysis-dropdown .dropdown-item {
+            white-space: normal;
+            padding: 0.5rem 1rem;
+          }
+
+          .spending-analysis-dropdown .dropdown-header {
+            padding: 0.5rem 1rem;
+          }
+        }
+      `}</style>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3 mb-0">Spending Analysis</h1>
         <div className="d-flex gap-2">
-          <div className="dropdown">
+          <div className="dropdown spending-analysis-dropdown">
             <button
               className="btn btn-primary btn-sm dropdown-toggle d-flex align-items-center gap-2"
               type="button"
@@ -649,7 +677,7 @@ export default function SpendingAnalysisPage() {
               <Download size={16} />
               <span>Export Report</span>
             </button>
-            <ul className="dropdown-menu dropdown-menu-end">
+            <ul className="dropdown-menu">
               <li><h6 className="dropdown-header">Export Format</h6></li>
               <li>
                 <button className="dropdown-item" onClick={() => handleExport('pdf')}>

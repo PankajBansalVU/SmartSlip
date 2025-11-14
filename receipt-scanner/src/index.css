@@ -128,5 +128,56 @@
   code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
-  
+
+}
+
+/* Fix dropdown positioning in Spending Analysis page */
+.dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: auto;
+  margin-top: 0.125rem;
+  z-index: 1050;
+  min-width: 200px;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+/* Mobile dropdown fixes */
+@media (max-width: 768px) {
+  .dropdown {
+    position: relative;
+  }
+
+  .dropdown .dropdown-menu,
+  .dropdown-menu,
+  .dropdown-menu-end {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: auto !important;
+    transform: none !important;
+    margin-top: 0.5rem;
+    min-width: 220px;
+    width: max-content;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .dropdown-menu.show {
+    display: block;
+  }
+
+  /* Ensure dropdown items have proper padding */
+  .dropdown-menu .dropdown-item {
+    white-space: normal;
+    padding: 0.5rem 1rem;
+  }
+
+  .dropdown-menu .dropdown-header {
+    padding: 0.5rem 1rem;
+  }
 }

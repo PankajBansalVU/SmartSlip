@@ -249,6 +249,17 @@
         .dropdown-menu {
             max-height: 300px;
             overflow-y: auto;
+            min-width: 200px;
+        }
+
+        /* Fix dropdown positioning */
+        .btn-group .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            left: auto;
+            margin-top: 0.125rem;
+            z-index: 1050;
         }
         
         .top-categories-progress {
@@ -260,21 +271,54 @@
             .chart-container {
                 height: 250px;
             }
-            
+
             .spending-heatmap {
                 grid-template-columns: repeat(12, 1fr);
                 grid-template-rows: repeat(14, 1fr);
             }
-            
+
             .heatmap-cell {
                 aspect-ratio: 1;
             }
-            
+
             .hour-label {
                 transform: rotate(90deg);
                 height: 20px;
                 font-size: 0.6rem;
                 margin-bottom: 5px;
+            }
+
+            /* Fix dropdown positioning on mobile */
+            .btn-group {
+                position: relative;
+            }
+
+            .btn-group .dropdown-menu,
+            .dropdown-menu,
+            .dropdown-menu-end {
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: auto !important;
+                transform: none !important;
+                margin-top: 0.5rem;
+                min-width: 220px;
+                width: max-content;
+                max-width: calc(100vw - 2rem);
+            }
+
+            .dropdown-menu.show {
+                display: block;
+            }
+
+            /* Ensure dropdown items have proper padding */
+            .dropdown-menu .dropdown-item {
+                white-space: normal;
+                padding: 0.5rem 1rem;
+            }
+
+            .dropdown-menu .dropdown-header {
+                padding: 0.5rem 1rem;
             }
         }
     </style>

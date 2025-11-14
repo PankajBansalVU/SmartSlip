@@ -5,6 +5,9 @@ services:
     env: static
     buildCommand: cd receipt-scanner && npm install && npm run build
     staticPublishPath: receipt-scanner/build
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false
     routes:
       - type: rewrite
         source: /*
@@ -19,3 +22,39 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: APP_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PREMIUM_MONTHLY_PRICE_ID
+        sync: false
+      - key: STRIPE_PREMIUM_ANNUAL_PRICE_ID
+        sync: false
