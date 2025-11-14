@@ -6,17 +6,35 @@ const path = require('path');
 const pool = require('./config/db.config');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const ExcelJS = require('exceljs');
+const jwt = require('jsonwebtoken');
 
-// Temporary authentication middleware
+// FIXED: Proper authentication middleware using JWT (was hardcoded to userId: 1)
 const authenticateUser = (req, res, next) => {
-    if (!req.user || !req.user.userId) {
-        // For testing, let's add a default user
-        req.user = { userId: 1 }; // Remove this line when you have proper auth
-        
-        // Uncomment below for production:
-        // return res.status(401).json({ success: false, message: 'Unauthorized' });
+    try {
+        // Get token from header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: 'No token provided. Please login to generate reports.'
+            });
+        }
+
+        const token = authHeader.split(' ')[1];
+
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Add user info to request
+        req.user = decoded;
+        next();
+    } catch (error) {
+        console.error('Authentication error:', error);
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid or expired token. Please login again.'
+        });
     }
-    next();
 };
 
 // Add this debugging function BEFORE the main route
@@ -102,7 +120,7 @@ router.post('/generate', authenticateUser, async (req, res) => {
         const reportData = await getReportData(connection, userId, startDate, endDate, categoryId);
         
         if (reportFormat === 'pdf') {
-            const reportPath = await generatePDFReport(reportData, reportTitle);
+            const reportPath = await generatePDFReport(reportData, reportTitle, userId);
             const reportUrl = `/reports/${path.basename(reportPath)}`;
 
             res.json({
@@ -111,7 +129,7 @@ router.post('/generate', authenticateUser, async (req, res) => {
                 message: 'PDF report generated successfully'
             });
         } else if (reportFormat === 'csv') {
-            const reportPath = await generateCSVReport(reportData, reportTitle);
+            const reportPath = await generateCSVReport(reportData, reportTitle, userId);
             const reportUrl = `/reports/${path.basename(reportPath)}`;
 
             res.json({
@@ -120,7 +138,7 @@ router.post('/generate', authenticateUser, async (req, res) => {
                 message: 'CSV report generated successfully'
             });
         } else if (reportFormat === 'excel') {
-            const reportPath = await generateExcelReport(reportData, reportTitle);
+            const reportPath = await generateExcelReport(reportData, reportTitle, userId);
             const reportUrl = `/reports/${path.basename(reportPath)}`;
 
             res.json({
@@ -133,6 +151,7 @@ router.post('/generate', authenticateUser, async (req, res) => {
                 success: true,
                 reportData: {
                     ...reportData,
+                    userId: userId, // Include userId for verification
                     generatedAt: new Date().toISOString()
                 }
             });
@@ -293,13 +312,14 @@ function sanitizeForPDF(text) {
 }
 
 // Generate PDF report - Simplified version
-async function generatePDFReport(data, title) {
+async function generatePDFReport(data, title, userId) {
     const doc = new PDFDocument({
         margin: 50,
         bufferPages: true,
         autoFirstPage: true
     });
-    const fileName = `report-${Date.now()}.pdf`;
+    // FIXED: Include userId in filename to prevent report sharing between users
+    const fileName = `report-user${userId}-${Date.now()}.pdf`;
     const reportsDir = path.join(__dirname, 'public', 'reports');
     const filePath = path.join(reportsDir, fileName);
 
@@ -334,8 +354,9 @@ async function generatePDFReport(data, title) {
 }
 
 // Generate CSV report
-async function generateCSVReport(data, title) {
-    const fileName = `report-${Date.now()}.csv`;
+async function generateCSVReport(data, title, userId) {
+    // FIXED: Include userId in filename to prevent report sharing between users
+    const fileName = `report-user${userId}-${Date.now()}.csv`;
     const reportsDir = path.join(__dirname, 'public', 'reports');
     const filePath = path.join(reportsDir, fileName);
 
@@ -374,8 +395,9 @@ async function generateCSVReport(data, title) {
 }
 
 // Generate Excel report
-async function generateExcelReport(data, title) {
-    const fileName = `report-${Date.now()}.xlsx`;
+async function generateExcelReport(data, title, userId) {
+    // FIXED: Include userId in filename to prevent report sharing between users
+    const fileName = `report-user${userId}-${Date.now()}.xlsx`;
     const reportsDir = path.join(__dirname, 'public', 'reports');
     const filePath = path.join(reportsDir, fileName);
 
