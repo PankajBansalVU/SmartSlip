@@ -36,17 +36,19 @@ router.get('/by-category', authenticateUser, async (req, res) => {
                     total_spent DESC
             `, [userId, startDate, endDate]);
             
-            // FIXED: Get transaction count separately
-            const [transactionResults] = await connection.query(`
-                SELECT COUNT(DISTINCT r.receipt_id) as transaction_count
+            // FIXED: Get total spending from receipts table (authoritative source)
+            const [summaryResults] = await connection.query(`
+                SELECT
+                    COUNT(DISTINCT r.receipt_id) as transaction_count,
+                    COALESCE(SUM(r.total), 0) as total_spending
                 FROM receipts r
                 WHERE r.user_id = ?
                 AND r.receipt_date BETWEEN ? AND ?
             `, [userId, startDate, endDate]);
-            
-            // Calculate total spending for percentage
-            const totalSpending = results.reduce((sum, cat) => sum + Number(cat.total_spent), 0);
-            const transactionCount = Number(transactionResults[0]?.transaction_count) || 0;
+
+            // Use authoritative receipt total instead of calculating from items
+            const totalSpending = Number(summaryResults[0]?.total_spending) || 0;
+            const transactionCount = Number(summaryResults[0]?.transaction_count) || 0;
             
             // Add percentage to each category
             const categoriesWithPercentage = results.map(cat => ({
@@ -97,20 +99,18 @@ router.get('/by-month', authenticateUser, async (req, res) => {
             const userId = req.user.userId;
             
             // Query to get spending by month
+            // FIXED: Use receipts.total instead of SUM(items) for accurate totals
             const [results] = await connection.query(`
-                SELECT 
+                SELECT
                     DATE_FORMAT(r.receipt_date, '%Y-%m') as month,
-                    SUM(ri.total_price) as total_spent
-                FROM 
-                    receipt_items ri
-                JOIN 
-                    receipts r ON ri.receipt_id = r.receipt_id
-                WHERE 
+                    COALESCE(SUM(r.total), 0) as total_spent
+                FROM receipts r
+                WHERE
                     r.user_id = ?
                     AND r.receipt_date >= DATE_SUB(CURRENT_DATE(), INTERVAL ? MONTH)
-                GROUP BY 
+                GROUP BY
                     DATE_FORMAT(r.receipt_date, '%Y-%m')
-                ORDER BY 
+                ORDER BY
                     month
             `, [userId, months]);
             

@@ -462,7 +462,7 @@ export default function HomePage() {
                 <div className="col-md-6">
                   <h6 className="text-muted mb-2">Transaction</h6>
                   <p className="fw-medium mb-1">Date: {analysis.date}</p>
-                  <p className="mb-1">Total: ${analysis.totals.total.toFixed(2)}</p>
+                  <p className="mb-1">Total: ${Number(analysis.totals.total).toFixed(2)}</p>
                   <p className="text-muted">Payment: {analysis.payment.method}</p>
                 </div>
               </div>
@@ -489,23 +489,23 @@ export default function HomePage() {
                           </span>
                         </td>
                         <td className="text-end">{item.quantity}</td>
-                        <td className="text-end">${item.price.toFixed(2)}</td>
-                        <td className="text-end">${item.total.toFixed(2)}</td>
+                        <td className="text-end">${Number(item.price).toFixed(2)}</td>
+                        <td className="text-end">${Number(item.total).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot className="table-light">
                     <tr>
                       <td colSpan={4} className="text-end fw-medium">Subtotal:</td>
-                      <td className="text-end">${analysis.totals.subtotal.toFixed(2)}</td>
+                      <td className="text-end">${Number(analysis.totals.subtotal).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td colSpan={4} className="text-end fw-medium">Tax:</td>
-                      <td className="text-end">${analysis.totals.tax.toFixed(2)}</td>
+                      <td className="text-end">${Number(analysis.totals.tax).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td colSpan={4} className="text-end fw-medium">Total:</td>
-                      <td className="text-end fw-bold">${analysis.totals.total.toFixed(2)}</td>
+                      <td className="text-end fw-bold">${Number(analysis.totals.total).toFixed(2)}</td>
                     </tr>
                   </tfoot>
                 </table>

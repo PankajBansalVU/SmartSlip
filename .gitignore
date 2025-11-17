@@ -51,4 +51,8 @@ coverage/
 
 # Misc
 .cache/
-"@ | Out-File -FilePath .gitignore -Encoding UTF8
+
+# Documentation files (for local use only)
+PROJECT_REPORT_DOCUMENTATION.md
+**/test-*.js
+backend/test-email-validation.js

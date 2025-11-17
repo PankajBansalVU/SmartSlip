@@ -387,7 +387,7 @@ app.post('/analyze-receipt', async (req, res) => {
         console.log('Analyzing text:', text);
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "chatgpt-4o-latest",
             messages: [
                 {
                     role: "system",
@@ -414,23 +414,32 @@ app.post('/analyze-receipt', async (req, res) => {
                         - Payment method
                         - Tax amount (if available)
                         - Any discounts applied
-                        
+
                         IMPORTANT: For the date field, try to preserve the exact date format from the receipt. If the date is in a format like "DD/MM/YYYY", keep it that way. If it's in a format like "January 15, 2024", keep it that way. Don't convert to another format.
                         Other tings to consider: Always think deeply and try to guess from the Name of the Business what kind of Business is this refering too.
 
-                        
+                        CRITICAL - TOTALS CALCULATION:
+                        - "subtotal" = sum of all item prices (before tax)
+                        - "tax" = tax amount shown on receipt (GST, VAT, etc.)
+                        - "total" = subtotal + tax (the final amount paid)
+
+                        ALWAYS ensure: total = subtotal + tax
+                        Look for labels like "TOTAL", "AMOUNT DUE", "BALANCE" for the total field.
+                        Look for labels like "SUBTOTAL", "GOODS TOTAL" for the subtotal field.
+                        Look for labels like "GST", "TAX", "VAT" for the tax field.
+
                         Format the response exactly as:
                         {
-                            "store": { 
-                                "name": "", 
-                                "location": "" 
+                            "store": {
+                                "name": "",
+                                "location": ""
                                 "abn": ""  // Look for ABN number in the format XX XXX XXX XXX
                             },
                             "date": "",
                             "items": [
-                                { 
-                                    "name": "", 
-                                    "quantity": 0, 
+                                {
+                                    "name": "",
+                                    "quantity": 0,
                                     "price": 0.00,
                                     "total": 0.00,
                                     "category_id": 0,
@@ -438,9 +447,9 @@ app.post('/analyze-receipt', async (req, res) => {
                                 }
                             ],
                             "totals": {
-                                "subtotal": 0.00,
-                                "tax": 0.00,
-                                "total": 0.00
+                                "subtotal": 0.00,  // Sum of items BEFORE tax
+                                "tax": 0.00,        // Tax amount (GST/VAT)
+                                "total": 0.00       // Final amount = subtotal + tax
                             },
                             "payment": {
                                 "method": "",
@@ -502,7 +511,80 @@ app.post('/analyze-receipt', async (req, res) => {
             category_name: category.name
         };
     });
-    
+
+    // ============================================
+    // VALIDATE AND FIX TOTALS
+    // ============================================
+    // The AI sometimes incorrectly sets total = subtotal
+    // We need to ensure: total = subtotal + tax
+
+    const subtotal = Number(analysisResult.totals?.subtotal) || 0;
+    const tax = Number(analysisResult.totals?.tax) || 0;
+    let total = Number(analysisResult.totals?.total) || 0;
+
+    // Calculate sum of all items
+    const itemsSum = analysisResult.items.reduce((sum, item) => {
+        return sum + (Number(item.total) || 0);
+    }, 0);
+
+    console.log('Total validation:', {
+        subtotal,
+        tax,
+        total,
+        itemsSum,
+        expectedTotal: subtotal + tax
+    });
+
+    // Check if total = subtotal + tax (within $0.10 tolerance for rounding)
+    const expectedTotal = subtotal + tax;
+    const totalMismatch = Math.abs(total - expectedTotal) > 0.10;
+
+    if (totalMismatch) {
+        console.warn('⚠️  Total calculation error detected!');
+        console.warn(`   AI returned: subtotal=$${subtotal}, tax=$${tax}, total=$${total}`);
+        console.warn(`   Expected total: $${expectedTotal.toFixed(2)}`);
+        console.warn(`   Items sum: $${itemsSum.toFixed(2)}`);
+
+        // Strategy 1: If items sum matches total, then total is correct
+        // This means: subtotal = total - tax
+        if (Math.abs(itemsSum - total) < 0.10) {
+            console.log('✓ Strategy 1: Items sum matches total, recalculating subtotal');
+            analysisResult.totals.subtotal = total - tax;
+            console.log(`   Corrected: subtotal=$${analysisResult.totals.subtotal.toFixed(2)}, tax=$${tax}, total=$${total}`);
+        }
+        // Strategy 2: If items sum matches subtotal, then subtotal is correct
+        // This means: total = subtotal + tax
+        else if (Math.abs(itemsSum - subtotal) < 0.10) {
+            console.log('✓ Strategy 2: Items sum matches subtotal, recalculating total');
+            analysisResult.totals.total = subtotal + tax;
+            console.log(`   Corrected: subtotal=$${subtotal}, tax=$${tax}, total=$${analysisResult.totals.total.toFixed(2)}`);
+        }
+        // Strategy 3: If neither matches perfectly, trust the items sum as subtotal
+        // and recalculate total
+        else {
+            console.log('✓ Strategy 3: Using items sum as subtotal, recalculating total');
+            analysisResult.totals.subtotal = itemsSum;
+            analysisResult.totals.total = itemsSum + tax;
+            console.log(`   Corrected: subtotal=$${itemsSum.toFixed(2)}, tax=$${tax}, total=$${analysisResult.totals.total.toFixed(2)}`);
+        }
+    } else {
+        console.log('✅ Totals are correct: subtotal + tax = total');
+    }
+
+    // Final sanity check: ensure total is not zero if we have items
+    if (analysisResult.items.length > 0 && (Number(analysisResult.totals.total) || 0) === 0) {
+        console.warn('⚠️  Total is zero but items exist, recalculating from items');
+        analysisResult.totals.subtotal = itemsSum;
+        analysisResult.totals.total = itemsSum + tax;
+    }
+
+    // Round all totals to 2 decimal places and keep as numbers
+    if (analysisResult.totals) {
+        analysisResult.totals.subtotal = parseFloat(Number(analysisResult.totals.subtotal || 0).toFixed(2));
+        analysisResult.totals.tax = parseFloat(Number(analysisResult.totals.tax || 0).toFixed(2));
+        analysisResult.totals.total = parseFloat(Number(analysisResult.totals.total || 0).toFixed(2));
+    }
+
     // Send successful response
     res.json({
         success: true,
