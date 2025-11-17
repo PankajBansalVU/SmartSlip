@@ -52,7 +52,16 @@ coverage/
 # Misc
 .cache/
 
-# Documentation files (for local use only)
+# Documentation files (for local use only - keep README.md only)
 PROJECT_REPORT_DOCUMENTATION.md
+DEPLOYMENT_GUIDE.md
+DEPLOY_NOW_SIMPLE.md
+DUPLICATE_DETECTION_SYSTEM.md
+FIX_RAILWAY_ERROR.md
+FIX_SUBSCRIPTION_LOCALLY.md
+REPORT_SYSTEM_EXPLANATION.md
+docs/
+
+# Test files
 **/test-*.js
 backend/test-email-validation.js
