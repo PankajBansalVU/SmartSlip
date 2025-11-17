@@ -13,18 +13,26 @@ const upload = multer({
 });
 
 // Initialize Google Cloud Vision client
-// Try to use credentials from environment variable first, then fall back to file
+// Priority: API Key > JSON credentials > Service account file
 let visionClient;
 try {
-  if (process.env.GOOGLE_CREDENTIALS_JSON) {
+  if (process.env.GOOGLE_CLOUD_VISION_API_KEY) {
+    // Use API key authentication (simplest method)
+    visionClient = new ImageAnnotatorClient({
+      apiKey: process.env.GOOGLE_CLOUD_VISION_API_KEY
+    });
+    console.log('✓ Google Cloud Vision initialized with API key');
+  } else if (process.env.GOOGLE_CREDENTIALS_JSON) {
     // Production: Use credentials from environment variable
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
     visionClient = new ImageAnnotatorClient({ credentials });
     console.log('✓ Google Cloud Vision initialized from environment variable');
   } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    // Local: Use credentials file path
-    visionClient = new ImageAnnotatorClient();
-    console.log('✓ Google Cloud Vision initialized from credentials file');
+    // Local: Use credentials file path with explicit keyFilename
+    const path = require('path');
+    const keyFilename = path.resolve(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    visionClient = new ImageAnnotatorClient({ keyFilename });
+    console.log('✓ Google Cloud Vision initialized from credentials file:', keyFilename);
   } else {
     throw new Error('No Google Cloud credentials found');
   }
