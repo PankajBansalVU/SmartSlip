@@ -13,10 +13,6 @@ node_modules/
 backend/.env
 receipt-scanner/.env
 
-# Google Cloud credentials
-**/google-credentials.json
-backend/google-credentials.json
-
 # Uploads and temporary files
 backend/uploads/*
 !backend/uploads/.gitkeep
