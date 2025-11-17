@@ -3,7 +3,6 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { ImageAnnotatorClient } = require('@google-cloud/vision');
-const path = require('path');
 
 // Configure multer for handling image uploads
 const upload = multer({
@@ -14,8 +13,25 @@ const upload = multer({
 });
 
 // Initialize Google Cloud Vision client
-// Make sure GOOGLE_APPLICATION_CREDENTIALS environment variable is set
-const visionClient = new ImageAnnotatorClient();
+// Try to use credentials from environment variable first, then fall back to file
+let visionClient;
+try {
+  if (process.env.GOOGLE_CREDENTIALS_JSON) {
+    // Production: Use credentials from environment variable
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+    visionClient = new ImageAnnotatorClient({ credentials });
+    console.log('✓ Google Cloud Vision initialized from environment variable');
+  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    // Local: Use credentials file path
+    visionClient = new ImageAnnotatorClient();
+    console.log('✓ Google Cloud Vision initialized from credentials file');
+  } else {
+    throw new Error('No Google Cloud credentials found');
+  }
+} catch (error) {
+  console.error('⚠️ Failed to initialize Google Cloud Vision:', error.message);
+  visionClient = null;
+}
 
 // Route to handle OCR with Google Cloud Vision
 router.post('/cloud-vision', upload.single('image'), async (req, res) => {
